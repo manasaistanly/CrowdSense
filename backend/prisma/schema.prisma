@@ -1,0 +1,452 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  DESTINATION_ADMIN
+  STAFF
+  ANALYST
+  COMMUNITY_REP
+  TOURIST
+}
+
+enum DestinationType {
+  NATIONAL_PARK
+  HERITAGE_SITE
+  HILL_STATION
+  BEACH
+  WILDLIFE_SANCTUARY
+  CULTURAL_SITE
+  ECO_TOURISM
+  ADVENTURE_SPORT
+}
+
+enum DestinationStatus {
+  ACTIVE
+  TEMPORARILY_CLOSED
+  MAINTENANCE
+  SEASONAL_CLOSED
+  DEACTIVATED
+}
+
+enum ZoneType {
+  CORE_CONSERVATION
+  BUFFER_ZONE
+  GENERAL_USE
+  RESTRICTED_ACCESS
+  VIEWPOINT
+  TRAIL
+  CAMPING_AREA
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum CapacityRuleType {
+  SEASONAL
+  WEATHER_BASED
+  EVENT_BASED
+  TIME_OF_DAY
+  CUSTOM
+}
+
+enum AlertLevel {
+  NORMAL
+  MODERATE
+  HIGH
+  CRITICAL
+}
+
+enum EnvironmentalMetricType {
+  AIR_QUALITY_INDEX
+  WATER_QUALITY
+  NOISE_LEVEL
+  WASTE_GENERATED
+  ENERGY_CONSUMPTION
+  CARBON_FOOTPRINT
+  BIODIVERSITY_INDEX
+  SOIL_QUALITY
+  VEGETATION_COVER
+}
+
+enum FeedbackType {
+  SUGGESTION
+  COMPLAINT
+  CONCERN
+  APPRECIATION
+  INCIDENT_REPORT
+}
+
+enum FeedbackCategory {
+  ENVIRONMENTAL
+  INFRASTRUCTURE
+  COMMUNITY_IMPACT
+  VISITOR_BEHAVIOR
+  SAFETY
+  REVENUE_DISTRIBUTION
+  OTHER
+}
+
+enum SeverityLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FeedbackStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  IN_PROGRESS
+  RESOLVED
+  DISMISSED
+}
+
+enum NotificationType {
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  CAPACITY_ALERT
+  SYSTEM_ANNOUNCEMENT
+  FEEDBACK_RESPONSE
+  REMINDER
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  firstName     String    @map("first_name")
+  lastName      String    @map("last_name")
+  phone         String?
+  role          UserRole  @default(TOURIST)
+  avatarUrl     String?   @map("avatar_url")
+  emailVerified Boolean   @default(false) @map("email_verified")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  lastLogin     DateTime? @map("last_login")
+  metadata      Json?
+
+  // Relations
+  bookings              Booking[]
+  adminDestinations     Destination[]
+  verifiedBookings      Booking[]                @relation("VerifiedBy")
+  environmentalMetrics  EnvironmentalMetric[]
+  communityFeedback     CommunityFeedback[]
+  feedbackResponses     CommunityFeedback[]      @relation("RespondedBy")
+  notifications         Notification[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model Destination {
+  id                String            @id @default(uuid())
+  name              String
+  slug              String            @unique
+  description       String?           @db.Text
+  locationAddress   String?           @map("location_address") @db.Text
+  latitude          Decimal?          @db.Decimal(10, 8)
+  longitude         Decimal?          @db.Decimal(11, 8)
+  destinationType   DestinationType   @map("destination_type")
+  maxDailyCapacity  Int               @map("max_daily_capacity")
+  currentCapacity   Int               @default(0) @map("current_capacity")
+  status            DestinationStatus @default(ACTIVE)
+  images            Json?
+  amenities         Json?
+  guidelines        String?           @db.Text
+  contactInfo       Json?             @map("contact_info")
+  openingTime       String?           @map("opening_time")
+  closingTime       String?           @map("closing_time")
+  operatingDays     Int[]             @map("operating_days")
+  adminUserId       String?           @map("admin_user_id")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  adminUser            User?                     @relation(fields: [adminUserId], references: [id])
+  zones                Zone[]
+  bookings             Booking[]
+  capacityRules        CapacityRule[]
+  pricingRules         PricingRule[]
+  realtimeCapacity     RealtimeCapacity[]
+  environmentalMetrics EnvironmentalMetric[]
+  revenueReports       RevenueReport[]
+  communityFeedback    CommunityFeedback[]
+
+  @@index([slug])
+  @@index([destinationType])
+  @@index([status])
+  @@map("destinations")
+}
+
+model Zone {
+  id              String   @id @default(uuid())
+  destinationId   String   @map("destination_id")
+  name            String
+  description     String?  @db.Text
+  maxCapacity     Int      @map("max_capacity")
+  currentCapacity Int      @default(0) @map("current_capacity")
+  zoneType        ZoneType @map("zone_type")
+  isRestricted    Boolean  @default(false) @map("is_restricted")
+  requiresGuide   Boolean  @default(false) @map("requires_guide")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  destination      Destination        @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  bookings         Booking[]
+  realtimeCapacity RealtimeCapacity[]
+
+  @@index([destinationId])
+  @@map("zones")
+}
+
+model Booking {
+  id                      String        @id @default(uuid())
+  bookingReference        String        @unique @map("booking_reference")
+  userId                  String        @map("user_id")
+  destinationId           String        @map("destination_id")
+  zoneId                  String?       @map("zone_id")
+  visitDate               DateTime      @map("visit_date") @db.Date
+  timeSlot                String?       @map("time_slot")
+  numberOfVisitors        Int           @default(1) @map("number_of_visitors")
+  visitorDetails          Json?         @map("visitor_details")
+  basePrice               Decimal       @map("base_price") @db.Decimal(10, 2)
+  dynamicPriceAdjustment  Decimal       @default(0) @map("dynamic_price_adjustment") @db.Decimal(10, 2)
+  totalPrice              Decimal       @map("total_price") @db.Decimal(10, 2)
+  currency                String        @default("INR")
+  status                  BookingStatus @default(PENDING)
+  paymentStatus           PaymentStatus @default(PENDING) @map("payment_status")
+  paymentId               String?       @map("payment_id")
+  qrCode                  String?       @map("qr_code") @db.Text
+  entryTime               DateTime?     @map("entry_time")
+  exitTime                DateTime?     @map("exit_time")
+  verifiedById            String?       @map("verified_by")
+  specialRequirements     String?       @map("special_requirements") @db.Text
+  cancellationReason      String?       @map("cancellation_reason") @db.Text
+  notes                   String?       @db.Text
+  createdAt               DateTime      @default(now()) @map("created_at")
+  updatedAt               DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  user        User         @relation(fields: [userId], references: [id])
+  destination Destination  @relation(fields: [destinationId], references: [id])
+  zone        Zone?        @relation(fields: [zoneId], references: [id])
+  verifiedBy  User?        @relation("VerifiedBy", fields: [verifiedById], references: [id])
+
+  @@index([userId])
+  @@index([destinationId])
+  @@index([visitDate])
+  @@index([status])
+  @@index([bookingReference])
+  @@map("bookings")
+}
+
+model CapacityRule {
+  id                 String            @id @default(uuid())
+  destinationId      String            @map("destination_id")
+  ruleName           String            @map("rule_name")
+  ruleType           CapacityRuleType  @map("rule_type")
+  applicableDays     Int[]             @map("applicable_days")
+  startTime          String?           @map("start_time")
+  endTime            String?           @map("end_time")
+  startDate          DateTime?         @map("start_date") @db.Date
+  endDate            DateTime?         @map("end_date") @db.Date
+  capacityPercentage Decimal?          @map("capacity_percentage") @db.Decimal(5, 2)
+  absoluteCapacity   Int?              @map("absolute_capacity")
+  conditions         Json?
+  priority           Int               @default(0)
+  isActive           Boolean           @default(true) @map("is_active")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@index([destinationId])
+  @@map("capacity_rules")
+}
+
+model PricingRule {
+  id                     String   @id @default(uuid())
+  destinationId          String   @map("destination_id")
+  ruleName               String   @map("rule_name")
+  basePrice              Decimal  @map("base_price") @db.Decimal(10, 2)
+  peakMultiplier         Decimal  @default(1.00) @map("peak_multiplier") @db.Decimal(5, 2)
+  offPeakMultiplier      Decimal  @default(1.00) @map("off_peak_multiplier") @db.Decimal(5, 2)
+  adultPrice             Decimal? @map("adult_price") @db.Decimal(10, 2)
+  childPrice             Decimal? @map("child_price") @db.Decimal(10, 2)
+  seniorPrice            Decimal? @map("senior_price") @db.Decimal(10, 2)
+  studentPrice           Decimal? @map("student_price") @db.Decimal(10, 2)
+  localPrice             Decimal? @map("local_price") @db.Decimal(10, 2)
+  foreignPrice           Decimal? @map("foreign_price") @db.Decimal(10, 2)
+  applicableDays         Int[]    @map("applicable_days")
+  startDate              DateTime? @map("start_date") @db.Date
+  endDate                DateTime? @map("end_date") @db.Date
+  minCapacityThreshold   Int?     @map("min_capacity_threshold")
+  maxCapacityThreshold   Int?     @map("max_capacity_threshold")
+  isActive               Boolean  @default(true) @map("is_active")
+  priority               Int      @default(0)
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@index([destinationId])
+  @@map("pricing_rules")
+}
+
+model RealtimeCapacity {
+  id                 String     @id @default(uuid())
+  destinationId      String     @map("destination_id")
+  zoneId             String?    @map("zone_id")
+  timestamp          DateTime   @default(now())
+  currentCount       Int        @default(0) @map("current_count")
+  capacityPercentage Decimal?   @map("capacity_percentage") @db.Decimal(5, 2)
+  entriesCount       Int        @default(0) @map("entries_count")
+  exitsCount         Int        @default(0) @map("exits_count")
+  alertLevel         AlertLevel @default(NORMAL) @map("alert_level")
+  createdAt          DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  destination Destination @relation(fields: [destinationId], references: [id])
+  zone        Zone?       @relation(fields: [zoneId], references: [id])
+
+  @@index([destinationId, timestamp(sort: Desc)])
+  @@index([createdAt])
+  @@map("realtime_capacity")
+}
+
+model EnvironmentalMetric {
+  id                 String                   @id @default(uuid())
+  destinationId      String                   @map("destination_id")
+  metricDate         DateTime                 @map("metric_date") @db.Date
+  metricType         EnvironmentalMetricType  @map("metric_type")
+  value              Decimal                  @db.Decimal(10, 2)
+  unit               String?
+  thresholdMin       Decimal?                 @map("threshold_min") @db.Decimal(10, 2)
+  thresholdMax       Decimal?                 @map("threshold_max") @db.Decimal(10, 2)
+  isWithinThreshold  Boolean?                 @map("is_within_threshold")
+  measurementMethod  String?                  @map("measurement_method")
+  notes              String?                  @db.Text
+  recordedById       String?                  @map("recorded_by")
+  createdAt          DateTime                 @default(now()) @map("created_at")
+
+  // Relations
+  destination Destination @relation(fields: [destinationId], references: [id])
+  recordedBy  User?       @relation(fields: [recordedById], references: [id])
+
+  @@index([destinationId, metricDate(sort: Desc)])
+  @@map("environmental_metrics")
+}
+
+model RevenueReport {
+  id                        String   @id @default(uuid())
+  destinationId             String   @map("destination_id")
+  reportDate                DateTime @map("report_date") @db.Date
+  totalRevenue              Decimal  @default(0) @map("total_revenue") @db.Decimal(12, 2)
+  bookingRevenue            Decimal  @default(0) @map("booking_revenue") @db.Decimal(12, 2)
+  additionalServicesRevenue Decimal  @default(0) @map("additional_services_revenue") @db.Decimal(12, 2)
+  totalVisitors             Int      @default(0) @map("total_visitors")
+  localVisitors             Int      @default(0) @map("local_visitors")
+  foreignVisitors           Int      @default(0) @map("foreign_visitors")
+  communityShare            Decimal  @default(0) @map("community_share") @db.Decimal(12, 2)
+  conservationFund          Decimal  @default(0) @map("conservation_fund") @db.Decimal(12, 2)
+  operationalCosts          Decimal  @default(0) @map("operational_costs") @db.Decimal(12, 2)
+  currency                  String   @default("INR")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  destination Destination @relation(fields: [destinationId], references: [id])
+
+  @@unique([destinationId, reportDate])
+  @@index([destinationId, reportDate(sort: Desc)])
+  @@map("revenue_reports")
+}
+
+model CommunityFeedback {
+  id             String           @id @default(uuid())
+  destinationId  String           @map("destination_id")
+  userId         String           @map("user_id")
+  feedbackType   FeedbackType     @map("feedback_type")
+  category       FeedbackCategory?
+  title          String
+  description    String           @db.Text
+  severity       SeverityLevel    @default(MEDIUM)
+  status         FeedbackStatus   @default(SUBMITTED)
+  adminResponse  String?          @map("admin_response") @db.Text
+  respondedById  String?          @map("responded_by")
+  respondedAt    DateTime?        @map("responded_at")
+  upvotes        Int              @default(0)
+  downvotes      Int              @default(0)
+  attachments    Json?
+  isAnonymous    Boolean          @default(false) @map("is_anonymous")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  destination Destination @relation(fields: [destinationId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+  respondedBy User?       @relation("RespondedBy", fields: [respondedById], references: [id])
+
+  @@index([destinationId])
+  @@index([status])
+  @@map("community_feedback")
+}
+
+model Notification {
+  id                String               @id @default(uuid())
+  userId            String               @map("user_id")
+  type              NotificationType
+  title             String
+  message           String               @db.Text
+  isRead            Boolean              @default(false) @map("is_read")
+  readAt            DateTime?            @map("read_at")
+  actionUrl         String?              @map("action_url")
+  actionLabel       String?              @map("action_label")
+  relatedEntityType String?              @map("related_entity_type")
+  relatedEntityId   String?              @map("related_entity_id")
+  priority          NotificationPriority @default(NORMAL)
+  createdAt         DateTime             @default(now()) @map("created_at")
+  expiresAt         DateTime?            @map("expires_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@map("notifications")
+}
