@@ -38,13 +38,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Rate limiting
-// const limiter = rateLimit({
-//     windowMs: 15 * 60 * 1000, // 15 minutes
-//     max: 100, // Limit each IP to 100 requests per windowMs
-//     standardHeaders: true,
-//     legacyHeaders: false,
-// });
-// app.use(limiter);
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use(limiter);
 
 
 // Routes
@@ -74,19 +74,12 @@ import { socketService } from './services/socket.service';
 const httpServer = http.createServer(app);
 
 // Initialize Socket.io
-// socketService.init(httpServer);
+socketService.init(httpServer);
 
-// Only listen if we are NOT in a Vercel serverless environment
-// Vercel exports the app and handles the server creation automatically
-if (process.env.VERCEL !== '1') {
-    // Initialize Socket.io only in local development
-    socketService.init(httpServer);
-
-    httpServer.listen(PORT, () => {
-        logger.info(`🚀 Server running on port ${PORT}`);
-        logger.info(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
-        logger.info(`🔗 API URL: http://localhost:${PORT}/api/v1`);
-    });
-}
+httpServer.listen(PORT, () => {
+    logger.info(`🚀 Server running on port ${PORT}`);
+    logger.info(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`🔗 API URL: http://localhost:${PORT}/api/v1`);
+});
 
 export default app;
