@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000';
+const BASE_URL = 'https://crowdsense-u317.onrender.com'; // Hardcoded for debugging
 const API_URL = `${BASE_URL}/api/v1`;
-console.log('🌐 API URL configured as:', API_URL);
+console.log('🌐 API URL (Hardcoded):', API_URL);
 
 export const api = axios.create({
     baseURL: API_URL,
