@@ -37,13 +37,6 @@ export default function DestinationsPage() {
         }
     };
 
-    const getCapacityColor = (current: number, max: number) => {
-        const percentage = (current / max) * 100;
-        if (percentage >= 80) return 'text-danger-600 bg-danger-50';
-        if (percentage >= 60) return 'text-warning-600 bg-warning-50';
-        return 'text-success-600 bg-success-50';
-    };
-
     const getCapacityPercentage = (current: number, max: number) => {
         return Math.round((current / max) * 100);
     };
