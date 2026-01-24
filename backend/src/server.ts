@@ -48,11 +48,11 @@ app.use(limiter);
 
 
 // Routes
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
     res.status(200).json({ status: 'OK', message: 'Backend is running' });
 });
 
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
