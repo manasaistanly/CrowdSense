@@ -46,7 +46,16 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+
 // Routes
+app.get('/', (req, res) => {
+    res.status(200).json({ status: 'OK', message: 'Backend is running' });
+});
+
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/destinations', destinationRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
