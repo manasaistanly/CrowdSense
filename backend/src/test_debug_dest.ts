@@ -13,11 +13,11 @@ async function main() {
             const dest = list.destinations[0];
             console.log('Trying to fetch by ID:', dest.id);
             const byId = await destinationService.getDestinationById(dest.id);
-            console.log('Success by ID');
+            console.log('Success by ID', !!byId);
 
             console.log('Trying to fetch by Slug:', dest.slug);
             const bySlug = await destinationService.getDestinationById(dest.slug);
-            console.log('Success by Slug');
+            console.log('Success by Slug', !!bySlug);
         } else {
             console.log('No destinations to test with.');
         }
