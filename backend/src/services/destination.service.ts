@@ -160,7 +160,7 @@ export class DestinationService {
             max: maxCapacity,
             percentage: Math.round(percentage * 10) / 10,
             alertLevel,
-            zones: destination.zones.map(zone => ({
+            zones: destination.zones.map((zone: any) => ({
                 id: zone.id,
                 name: zone.name,
                 current: zone.currentCapacity,
@@ -243,7 +243,7 @@ export class DestinationService {
 
         // Group by date
         const bookingsByDate = new Map<string, number>();
-        bookings.forEach(booking => {
+        bookings.forEach((booking: any) => {
             const dateStr = booking.visitDate.toISOString().split('T')[0];
             const current = bookingsByDate.get(dateStr) || 0;
             bookingsByDate.set(dateStr, current + booking.numberOfVisitors);

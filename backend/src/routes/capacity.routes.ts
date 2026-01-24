@@ -58,7 +58,7 @@ router.get('/destinations/:id', async (req: AuthRequest, res: Response) => {
                 max: destination.maxDailyCapacity,
                 percentage: Math.round(percentage * 10) / 10,
                 alertLevel,
-                zones: destination.zones.map(zone => ({
+                zones: destination.zones.map((zone: any) => ({
                     id: zone.id,
                     name: zone.name,
                     current: zone.currentCapacity,

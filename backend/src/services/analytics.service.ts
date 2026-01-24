@@ -43,7 +43,7 @@ export class AnalyticsService {
         // Group by day
         const groupedData = new Map<string, { visitors: number; revenue: number }>();
 
-        bookings.forEach(booking => {
+        bookings.forEach((booking: any) => {
             const dateStr = booking.visitDate.toISOString().split('T')[0];
             const current = groupedData.get(dateStr) || { visitors: 0, revenue: 0 };
 

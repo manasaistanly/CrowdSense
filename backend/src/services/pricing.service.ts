@@ -42,7 +42,7 @@ export class PricingService {
             }
         });
 
-        const bookedCount = bookings.reduce((sum, b) => sum + b.numberOfVisitors, 0);
+        const bookedCount = bookings.reduce((sum: number, b: any) => sum + b.numberOfVisitors, 0);
         const capacityPercentage = (bookedCount / destination.maxDailyCapacity) * 100;
 
         if (capacityPercentage >= 90) {

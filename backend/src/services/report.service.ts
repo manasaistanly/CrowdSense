@@ -30,14 +30,14 @@ export class ReportService {
         doc.moveDown(2);
 
         // Calculate Stats
-        const aqiMetrics = metrics.filter(m => m.metricType === EnvironmentalMetricType.AIR_QUALITY_INDEX);
-        const carbonMetrics = metrics.filter(m => m.metricType === EnvironmentalMetricType.CARBON_FOOTPRINT);
+        const aqiMetrics = metrics.filter((m: any) => m.metricType === EnvironmentalMetricType.AIR_QUALITY_INDEX);
+        const carbonMetrics = metrics.filter((m: any) => m.metricType === EnvironmentalMetricType.CARBON_FOOTPRINT);
 
         const avgAQI = aqiMetrics.length > 0
-            ? aqiMetrics.reduce((acc, m) => acc + Number(m.value), 0) / aqiMetrics.length
+            ? aqiMetrics.reduce((acc: number, m: any) => acc + Number(m.value), 0) / aqiMetrics.length
             : 0;
 
-        const totalCarbon = carbonMetrics.reduce((acc, m) => acc + Number(m.value), 0);
+        const totalCarbon = carbonMetrics.reduce((acc: number, m: any) => acc + Number(m.value), 0);
 
         // Summary Section
         doc.fontSize(16).text('Executive Summary');
@@ -76,7 +76,7 @@ export class ReportService {
         let yPosition = tableTop + 25;
         doc.font('Helvetica');
 
-        metrics.slice(0, 15).forEach((metric) => {
+        metrics.slice(0, 15).forEach((metric: any) => {
             if (yPosition > 700) {
                 doc.addPage();
                 yPosition = 50;

@@ -55,7 +55,7 @@ export class CommunityService {
         });
 
         // Strip user details if anonymous
-        return feedback.map(item => {
+        return feedback.map((item: any) => {
             if (item.isAnonymous) {
                 return {
                     ...item,
