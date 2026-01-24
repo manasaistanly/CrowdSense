@@ -17,7 +17,7 @@ import { environmentalRoutes } from './routes/environmental.routes';
 import { communityRoutes } from './routes/community.routes';
 import { reportRoutes } from './routes/report.routes';
 import { logger } from './utils/logger';
-import { prisma } from './config/database';
+
 
 // Load environment variables
 config();
@@ -37,7 +37,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ... (skipping unchanged parts)
+// Rate limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use(limiter);
+
+// Routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/destinations', destinationRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/capacity', capacityRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/pricing', pricingRoutes);
+app.use('/api/v1/environmental', environmentalRoutes);
+app.use('/api/v1/community', communityRoutes);
+app.use('/api/v1/reports', reportRoutes);
 
 // Start server
 import http from 'http';
