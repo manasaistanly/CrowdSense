@@ -117,7 +117,7 @@ After seeding the database:
 ## 🎨 Tech Stack
 
 ### Frontend
-- React 18.2 + TypeScript
+- React 18.2 + javaScript
 - Vite
 - TailwindCSS + shadcn/ui
 - React Router v6
@@ -126,7 +126,7 @@ After seeding the database:
 - Recharts (Data Visualization)
 
 ### Backend
-- Node.js 20 + TypeScript
+- Node.js 20 + javaScript
 - Express.js
 - Prisma ORM
 - PostgreSQL
@@ -181,7 +181,7 @@ MIT License - see LICENSE file for details
 
 ## 👨‍💻 Development Team
 
-Built with ❤️ by the SustainaTour Team
+Built with ❤️ by the STANLY
 
 ## 🤝 Contributing
 
