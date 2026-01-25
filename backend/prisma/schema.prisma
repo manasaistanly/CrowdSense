@@ -142,6 +142,12 @@ enum NotificationPriority {
   URGENT
 }
 
+enum OperationalStatus {
+  NORMAL
+  REDUCED
+  CLOSED
+}
+
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
@@ -166,6 +172,7 @@ model User {
   communityFeedback     CommunityFeedback[]
   feedbackResponses     CommunityFeedback[]      @relation("RespondedBy")
   notifications         Notification[]
+  dailyStatusUpdates    DailyOperationalStatus[]
 
   @@index([email])
   @@index([role])
@@ -205,6 +212,8 @@ model Destination {
   environmentalMetrics EnvironmentalMetric[]
   revenueReports       RevenueReport[]
   communityFeedback    CommunityFeedback[]
+  weatherLogs          WeatherLog[]
+  dailyOperationalStatus DailyOperationalStatus[]
 
   @@index([slug])
   @@index([destinationType])
@@ -450,4 +459,40 @@ model Notification {
 
   @@index([userId, isRead, createdAt(sort: Desc)])
   @@map("notifications")
+}
+
+model WeatherLog {
+  id               String   @id @default(uuid())
+  destinationId    String   @map("destination_id")
+  timestamp        DateTime @default(now())
+  condition        String   // e.g., "Heavy Rain", "Clear"
+  temperature      Decimal  @db.Decimal(5, 2)
+  rainfallMm       Decimal  @default(0) @map("rainfall_mm") @db.Decimal(10, 2)
+  windSpeedKmph    Decimal  @default(0) @map("wind_speed_kmph") @db.Decimal(10, 2)
+  visibilityMeters Decimal  @default(10000) @map("visibility_meters") @db.Decimal(10, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  destination      Destination @relation(fields: [destinationId], references: [id])
+
+  @@index([destinationId, timestamp(sort: Desc)])
+  @@map("weather_logs")
+}
+
+model DailyOperationalStatus {
+  id                String            @id @default(uuid())
+  destinationId     String            @map("destination_id")
+  date              DateTime          @db.Date
+  status            OperationalStatus @default(NORMAL)
+  baseCapacity      Int               @map("base_capacity")
+  effectiveCapacity Int               @map("effective_capacity")
+  adminDecisionNotes String?          @map("admin_decision_notes") @db.Text
+  updatedById       String            @map("updated_by")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  destination       Destination @relation(fields: [destinationId], references: [id])
+  updatedBy         User        @relation(fields: [updatedById], references: [id])
+
+  @@unique([destinationId, date])
+  @@index([date])
+  @@map("daily_operational_status")
 }

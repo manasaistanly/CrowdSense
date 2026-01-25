@@ -388,4 +388,166 @@ router.delete(
     }
 );
 
+
+import { WeatherService } from '../services/WeatherService';
+import { CapacityRecommendationEngine } from '../services/CapacityRecommendationEngine';
+
+/**
+ * GET /api/v1/capacity/operational-status/:destinationId
+ * Get current operational status including weather and recommendations
+ */
+router.get(
+    '/operational-status/:destinationId',
+    authenticate,
+    requirePermission(PERMISSIONS.DESTINATION_VIEW),
+    async (req: AuthRequest, res: Response) => {
+        try {
+            const destinationId = req.params.destinationId as string;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // 1. Get Live Weather
+            const weather = await WeatherService.getInstance().getCurrentWeather(destinationId);
+
+            // 2. Calculate Recommendation
+            const recommendation = CapacityRecommendationEngine.calculateRecommendation(weather);
+
+            // 3. Get Current DB Status (if decided)
+            const dailyStatus = await prisma.dailyOperationalStatus.findUnique({
+                where: {
+                    destinationId_date: {
+                        destinationId,
+                        date: today
+                    }
+                },
+                include: {
+                    updatedBy: {
+                        select: {
+                            firstName: true,
+                            lastName: true,
+                            role: true // Add role if relevant
+                        }
+                    }
+                }
+            });
+
+            // 4. Get Destination Details (for base capacity)
+            const destination = await prisma.destination.findUnique({
+                where: { id: destinationId },
+                select: { maxDailyCapacity: true, currentCapacity: true }
+            });
+
+            if (!destination) {
+                return res.status(404).json({ success: false, message: 'Destination not found' });
+            }
+
+            // Determine Effective Capacity
+            // If Admin made a decision, use it. Else, use Recommendation? No, SYSTEM SUGGESTS, ADMIN DECIDES.
+            // If no decision, we show default Max Capacity but with the Recommendation Alert.
+            // Or should we assume 'Normal' until decided?
+            // The prompt says: "System = Suggests", "Admin = Decides".
+            // So effective capacity is Base Capacity UNLESS dailyStatus exists.
+
+            const effectiveCapacity = dailyStatus ? dailyStatus.effectiveCapacity : destination.maxDailyCapacity;
+
+            // Calculate percentage based on EFFECTIVE capacity
+            const currentLoad = Math.round((destination.currentCapacity / effectiveCapacity) * 100);
+
+            return res.json({
+                success: true,
+                data: {
+                    weather,
+                    recommendation,
+                    dailyStatus,
+                    baseCapacity: destination.maxDailyCapacity,
+                    effectiveCapacity,
+                    currentLoad
+                }
+            });
+
+        } catch (error: any) {
+            logger.error('Get operational status error:', error);
+            return res.status(500).json({
+                success: false,
+                error: {
+                    code: 'FETCH_FAILED',
+                    message: error.message || 'Failed to fetch status',
+                },
+            });
+        }
+    }
+);
+
+/**
+ * POST /api/v1/capacity/decide
+ * Admin sets the daily operational capacity
+ */
+router.post(
+    '/decide',
+    authenticate,
+    requirePermission(PERMISSIONS.CAPACITY_OVERRIDE), // Or a specific permission for daily decisions
+    async (req: AuthRequest, res: Response) => {
+        try {
+            const { destinationId, status, effectiveCapacity, notes } = req.body;
+            const userId = req.user!.userId;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Validation
+            if (!destinationId || !status || effectiveCapacity === undefined) {
+                return res.status(400).json({ success: false, message: 'Missing required fields' });
+            }
+
+            const destination = await prisma.destination.findUnique({
+                where: { id: destinationId },
+                select: { maxDailyCapacity: true }
+            });
+
+            if (!destination) return res.status(404).json({ success: false, message: 'Destination not found' });
+
+            const dailyStatus = await prisma.dailyOperationalStatus.upsert({
+                where: {
+                    destinationId_date: {
+                        destinationId,
+                        date: today
+                    }
+                },
+                update: {
+                    status,
+                    effectiveCapacity,
+                    adminDecisionNotes: notes,
+                    updatedById: userId
+                },
+                create: {
+                    destinationId,
+                    date: today,
+                    status,
+                    baseCapacity: destination.maxDailyCapacity,
+                    effectiveCapacity,
+                    adminDecisionNotes: notes,
+                    updatedById: userId
+                }
+            });
+
+            logger.info(`Daily operational status updated for ${destinationId}: ${status} (${effectiveCapacity})`);
+
+            return res.json({
+                success: true,
+                data: dailyStatus,
+                message: 'Operational decisions applied successfully'
+            });
+
+        } catch (error: any) {
+            logger.error('Set operational status error:', error);
+            return res.status(500).json({
+                success: false,
+                error: {
+                    code: 'UPDATE_FAILED',
+                    message: error.message || 'Failed to update status',
+                },
+            });
+        }
+    }
+);
+
 export default router;

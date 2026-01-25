@@ -12,6 +12,8 @@ import toast from 'react-hot-toast';
 import VisitorTrendsChart from '../components/dashboard/VisitorTrendsChart';
 import { useSocket } from '../hooks/useSocket';
 import ThemeToggle from '../components/ThemeToggle';
+import WeatherWidget from '../components/admin/WeatherWidget';
+import CapacityControlPanel from '../components/admin/CapacityControlPanel';
 
 interface DashboardStats {
     totalRevenue: number;
@@ -45,6 +47,9 @@ export default function AdminDashboardPage() {
     const [capacities, setCapacities] = useState<DestinationCapacity[]>([]);
     const [trends, setTrends] = useState<any>(null);
     // const [loading, setLoading] = useState(true);
+
+    const [operationalStatus, setOperationalStatus] = useState<any>(null);
+    const [selectedDestForControl, setSelectedDestForControl] = useState<string | null>(null);
 
     // Socket integration
     const { on } = useSocket();
@@ -83,6 +88,12 @@ export default function AdminDashboardPage() {
         };
     }, [user, on]);
 
+    useEffect(() => {
+        if (selectedDestForControl) {
+            fetchOperationalStatus(selectedDestForControl);
+        }
+    }, [selectedDestForControl]);
+
     const fetchAdminData = async () => {
         try {
             const [bookingsRes, destinationsRes, statsRes, trendsRes] = await Promise.all([
@@ -103,6 +114,10 @@ export default function AdminDashboardPage() {
                 currentCapacity: d.currentCapacity
             })));
 
+            if (destinations.length > 0 && !selectedDestForControl) {
+                setSelectedDestForControl(destinations[0].id);
+            }
+
             setStats({
                 totalRevenue: statsRes.data.totalRevenue,
                 totalBookings: statsRes.data.pendingBookings, // Using pending count as a proxy for "Action Required" or similar, or just total
@@ -114,6 +129,15 @@ export default function AdminDashboardPage() {
 
         } catch (error) {
             console.error('Failed to load dashboard:', error);
+        }
+    };
+
+    const fetchOperationalStatus = async (destId: string) => {
+        try {
+            const res = await api.get(`/capacity/operational-status/${destId}`);
+            setOperationalStatus(res.data.data);
+        } catch (error) {
+            console.error('Failed to load operational status:', error);
         }
     };
 
@@ -184,8 +208,8 @@ export default function AdminDashboardPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8 flex justify-between items-end">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Digital Visa Command Center</h1>
-                        <p className="text-gray-600 mt-1">Real-time monitoring and capacity control.</p>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Digital Visa Command Center</h1>
+                        <p className="text-gray-600 dark:text-gray-400 mt-1">Real-time monitoring and capacity control.</p>
                     </div>
                     <div className="flex gap-3">
                         <Link to="/checkpost" className="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 flex items-center gap-2 shadow-sm font-medium">
@@ -196,6 +220,20 @@ export default function AdminDashboardPage() {
                         </Link>
                     </div>
                 </div>
+
+                {/* Weather & Capacity Control */}
+                {operationalStatus && selectedDestForControl && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <WeatherWidget weather={operationalStatus.weather} />
+                        <CapacityControlPanel
+                            destinationId={selectedDestForControl}
+                            recommendation={operationalStatus.recommendation}
+                            baseCapacity={operationalStatus.baseCapacity}
+                            currentEffectiveCapacity={operationalStatus.effectiveCapacity}
+                            onUpdate={() => fetchOperationalStatus(selectedDestForControl)}
+                        />
+                    </div>
+                )}
 
                 {/* Capacity Monitoring Section (The "Human Sensor") */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
