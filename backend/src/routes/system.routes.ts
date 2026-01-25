@@ -14,8 +14,9 @@ router.post('/seed', async (req, res) => {
 
         // --- COPY SEED LOGIC HERE ---
         // Create users
+        // Create users
         const adminPassword = await bcrypt.hash('admin123', SALT_ROUNDS);
-        const staffPassword = await bcrypt.hash('staff123', SALT_ROUNDS);
+        // const staffPassword = await bcrypt.hash('staff123', SALT_ROUNDS);
 
         // Define users first
         const superAdminData = {
@@ -49,12 +50,12 @@ router.post('/seed', async (req, res) => {
         };
 
         // Upsert users
-        const superAdmin = await prisma.user.upsert({ where: { email: superAdminData.email }, update: {}, create: superAdminData });
+        await prisma.user.upsert({ where: { email: superAdminData.email }, update: {}, create: superAdminData });
         const ootyAdmin = await prisma.user.upsert({ where: { email: ootyAdminData.email }, update: {}, create: ootyAdminData });
         const nilgirisAdmin = await prisma.user.upsert({ where: { email: nilgirisAdminData.email }, update: {}, create: nilgirisAdminData });
 
         // Destinations
-        const ootyLake = await prisma.destination.upsert({
+        await prisma.destination.upsert({
             where: { slug: 'ooty-lake' },
             update: {},
             create: {
@@ -81,7 +82,7 @@ router.post('/seed', async (req, res) => {
             },
         });
 
-        const nilgirisNationalPark = await prisma.destination.upsert({
+        await prisma.destination.upsert({
             where: { slug: 'nilgiris-national-park' },
             update: {},
             create: {
@@ -110,7 +111,7 @@ router.post('/seed', async (req, res) => {
 
         // Add more destinations (truncated for brevity, adding key ones)
 
-        const botanicalGarden = await prisma.destination.upsert({
+        await prisma.destination.upsert({
             where: { slug: 'government-botanical-garden' },
             update: {},
             create: {
