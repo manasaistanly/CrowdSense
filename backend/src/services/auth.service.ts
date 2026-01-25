@@ -163,7 +163,12 @@ export class AuthService {
             });
 
             return { accessToken };
-        } catch (error) {
+        } catch (error: any) {
+            logger.error('Refresh token verification failed:', {
+                error: error.message,
+                stack: error.stack,
+                name: error.name
+            });
             throw new Error('Invalid refresh token');
         }
     }
