@@ -29,6 +29,7 @@ interface RegisterData {
     firstName: string;
     lastName: string;
     phone?: string;
+    role?: string;
 }
 
 export const useAuth = create<AuthState>()(

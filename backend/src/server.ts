@@ -67,6 +67,9 @@ app.use('/api/v1/environmental', environmentalRoutes);
 app.use('/api/v1/community', communityRoutes);
 app.use('/api/v1/reports', reportRoutes);
 
+import systemRoutes from './routes/system.routes';
+app.use('/api/v1/system', systemRoutes);
+
 // Start server
 import http from 'http';
 import { socketService } from './services/socket.service';

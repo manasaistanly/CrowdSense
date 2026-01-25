@@ -16,6 +16,7 @@ export default function RegisterPage() {
         phone: '',
         password: '',
         confirmPassword: '',
+        role: 'TOURIST',
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -33,6 +34,7 @@ export default function RegisterPage() {
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 phone: formData.phone || undefined,
+                role: formData.role,
             });
             navigate('/dashboard');
         } catch (error) {
@@ -159,6 +161,23 @@ export default function RegisterPage() {
                                         className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
                                         placeholder="••••••••"
                                     />
+                                </div>
+                            </div>
+
+                            {/* Role Selection (For Demo) */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Account Type (Demo)</label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                    <select
+                                        value={formData.role}
+                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none"
+                                    >
+                                        <option value="TOURIST">Tourist</option>
+                                        <option value="DESTINATION_ADMIN">Destination Admin</option>
+                                        <option value="SUPER_ADMIN">Super Admin</option>
+                                    </select>
                                 </div>
                             </div>
 
