@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import { PrismaClient, UserRole, DestinationType, DestinationStatus, ZoneType } from '@prisma/client';
+import { UserRole, DestinationType, DestinationStatus } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { prisma } from '../config/database'; // Import existing prisma instance
 
@@ -8,13 +8,11 @@ const router = Router();
 
 const SALT_ROUNDS = 12;
 
-router.post('/seed', async (req, res) => {
+router.post('/seed', async (_req, res) => {
     try {
         console.log('🌱 Starting database seed via API...');
 
-        // --- COPY SEED LOGIC HERE ---
-        // Create users
-        // Create users
+
         const adminPassword = await bcrypt.hash('admin123', SALT_ROUNDS);
         // const staffPassword = await bcrypt.hash('staff123', SALT_ROUNDS);
 
