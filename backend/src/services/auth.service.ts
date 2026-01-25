@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { UserRole } from '@prisma/client';
 import { prisma } from '../config/database';
 import { JWTPayload } from '../middleware/auth';
+import { logger } from '../utils/logger';
 
 const SALT_ROUNDS = 12;
 
@@ -76,6 +77,8 @@ export class AuthService {
         };
     }
 
+
+
     /**
      * Login user
      */
@@ -86,11 +89,13 @@ export class AuthService {
         });
 
         if (!user) {
+            logger.warn(`Login failed: User not found for email ${data.email}`);
             throw new Error('Invalid credentials');
         }
 
         // Check if user is active
         if (!user.isActive) {
+            logger.warn(`Login failed: User ${data.email} is inactive`);
             throw new Error('Account is deactivated');
         }
 
@@ -98,6 +103,7 @@ export class AuthService {
         const isValidPassword = await bcrypt.compare(data.password, user.passwordHash);
 
         if (!isValidPassword) {
+            logger.warn(`Login failed: Invalid password for user ${data.email}`);
             throw new Error('Invalid credentials');
         }
 
