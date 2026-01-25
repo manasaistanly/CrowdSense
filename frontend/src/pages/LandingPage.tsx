@@ -1,26 +1,28 @@
 import { Link } from 'react-router-dom';
 import { Leaf, Shield, Activity, BarChart3, ArrowRight } from 'lucide-react';
 import { useAuth } from '../stores/authStore';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function LandingPage() {
     const { user } = useAuth();
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans">
+        <div className="min-h-screen bg-slate-50 dark:bg-gray-900 font-sans transition-colors duration-300">
             {/* Navigation */}
-            <nav className="bg-white border-b border-gray-200">
+            <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-20">
                         <div className="flex items-center gap-3">
                             <img src="/logo.png" alt="SustainaTour Government Seal" className="h-12 w-auto" />
                             <div>
-                                <h1 className="text-xl font-bold text-gray-900 tracking-tight leading-none">SustainaTour</h1>
-                                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mt-0.5">Ecological Tourism Management Platform</p>
+                                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">SustainaTour</h1>
+                                <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mt-0.5">Ecological Tourism Management Platform</p>
                             </div>
                         </div>
                         <div className="hidden md:flex items-center gap-6">
-                            <a href="#mission" className="text-sm font-medium text-gray-600 hover:text-primary-700">Our Mission</a>
-                            <a href="#impact" className="text-sm font-medium text-gray-600 hover:text-primary-700">Regulatory Impact</a>
+                            <ThemeToggle />
+                            <a href="#mission" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400">Our Mission</a>
+                            <a href="#impact" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400">Regulatory Impact</a>
                             {user ? (
                                 <Link
                                     to={user.role === 'TOURIST' ? '/dashboard' : '/admin/dashboard'}
@@ -30,7 +32,7 @@ export default function LandingPage() {
                                 </Link>
                             ) : (
                                 <div className="flex items-center gap-3">
-                                    <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-primary-700">
+                                    <Link to="/login" className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary-700 dark:hover:text-primary-400">
                                         Staff Login
                                     </Link>
                                     <Link

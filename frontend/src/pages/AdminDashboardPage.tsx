@@ -11,6 +11,7 @@ import { useAuth } from '../stores/authStore';
 import toast from 'react-hot-toast';
 import VisitorTrendsChart from '../components/dashboard/VisitorTrendsChart';
 import { useSocket } from '../hooks/useSocket';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface DashboardStats {
     totalRevenue: number;
@@ -161,6 +162,7 @@ export default function AdminDashboardPage() {
                             <span className="text-xl font-bold tracking-tight">SustainaTour <span className="text-gray-400 font-normal text-sm">| Admin</span></span>
                         </div>
                         <div className="flex items-center gap-6">
+                            <ThemeToggle />
                             <span className="text-sm text-gray-400">
                                 {user?.firstName} {user?.lastName} ({user?.role})
                             </span>

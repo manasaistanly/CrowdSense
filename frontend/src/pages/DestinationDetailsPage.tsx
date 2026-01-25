@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Clock, Info, AlertTriangle, ArrowRight, TrendingUp, ArrowLeft, Activity, Target, Leaf, Shield } from 'lucide-react';
+import { MapPin, TrendingUp, Activity, Target, Leaf, Shield, Info, ChevronDown, Ticket } from 'lucide-react';
 import api from '../lib/api';
-// import { useAuth } from '../stores/authStore';
 import toast from 'react-hot-toast';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface Zone {
     id: string;
@@ -18,6 +18,8 @@ interface Destination {
     name: string;
     description: string;
     locationAddress: string;
+    latitude?: number;
+    longitude?: number;
     maxDailyCapacity: number;
     currentCapacity: number;
     openingTime: string;
@@ -37,10 +39,10 @@ interface Destination {
 export default function DestinationDetailsPage() {
     const { slug } = useParams();
     const navigate = useNavigate();
-    // const { user } = useAuth();
     const [destination, setDestination] = useState<Destination | null>(null);
     const [alternatives, setAlternatives] = useState<Destination[]>([]);
     const [loading, setLoading] = useState(true);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
         fetchDestination();
@@ -54,6 +56,13 @@ export default function DestinationDetailsPage() {
             }
         }
     }, [destination]);
+
+    // Ensure video plays when loaded
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.play().catch(e => console.log("Autoplay prevented:", e));
+        }
+    }, [destination, loading]);
 
     const fetchDestination = async () => {
         try {
@@ -70,28 +79,27 @@ export default function DestinationDetailsPage() {
     const fetchAlternatives = async () => {
         try {
             const response = await api.get('/destinations');
-            // Filter out current destination and full destinations
             const others = response.data.data.destinations
                 .filter((d: Destination) => d.id !== destination?.id)
-                .filter((d: Destination) => (d.currentCapacity / d.maxDailyCapacity) * 100 < 80)
-                .slice(0, 2);
+                .slice(0, 4);
             setAlternatives(others);
         } catch (error) {
             console.error('Failed to load alternatives');
         }
     };
 
-    const getCapacityColor = (current: number, max: number) => {
-        const percentage = (current / max) * 100;
-        if (percentage >= 90) return 'text-danger-600';
-        if (percentage >= 70) return 'text-warning-600';
-        return 'text-success-600';
+    const openLocation = () => {
+        if (destination?.latitude && destination?.longitude) {
+            window.open(`https://www.google.com/maps?q=${destination.latitude},${destination.longitude}`, '_blank');
+        } else if (destination?.locationAddress) {
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination.locationAddress)}`, '_blank');
+        }
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-600 border-t-transparent"></div>
             </div>
         );
     }
@@ -102,291 +110,224 @@ export default function DestinationDetailsPage() {
     const isHighDemand = percentage >= 90;
 
     return (
-        <div className="min-h-screen bg-[#f7fdf9] pb-12 relative overflow-hidden">
-            {/* Decorative Background Elements */}
-            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-primary-100/30 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="min-h-screen bg-white dark:bg-[#141414] text-gray-900 dark:text-white font-sans selection:bg-red-600 selection:text-white overflow-x-hidden transition-colors duration-300">
 
-            {/* Hero Image */}
-            <div className="relative h-[28rem] bg-gray-900 overflow-hidden">
-                {destination.images && destination.images.length > 0 && (
-                    <img
-                        src={typeof destination.images === 'string' ? JSON.parse(destination.images)[0] : destination.images[0]}
-                        alt={destination.name}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop';
-                        }}
-                    />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent z-10"></div>
-                {(!destination.images || destination.images.length === 0) && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary-800 to-primary-950 opacity-80"></div>
-                )}
+            {/* Navbar (Transparent & Floating with improved visibility) */}
+            <div className="fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-6 flex justify-between items-center bg-gradient-to-b from-black/80 via-black/40 to-transparent transition-all duration-300 pointer-events-none">
+                <div className="bg-black/30 backdrop-blur-md rounded-full px-4 py-2 border border-white/10 shadow-lg pointer-events-auto flex items-center">
+                    <Link to="/destinations" className="flex items-center gap-3 group">
+                        <img
+                            src="/logo.png"
+                            className="h-8 w-8 object-contain transition-all duration-300 rounded-lg"
+                            alt="Logo"
+                        />
+                        <span className="text-white font-bold text-xl tracking-tight uppercase hidden md:block drop-shadow-md">SustainaTour</span>
+                    </Link>
+                </div>
 
-                <div className="absolute bottom-0 left-0 right-0 z-20 container mx-auto px-4 py-12">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="backdrop-blur-md bg-white/20 border border-white/30 px-3 py-1 rounded-full">
-                                <span className="text-white text-[10px] font-bold uppercase tracking-widest">Featured Destination</span>
-                            </div>
+                <div className="flex items-center gap-6 pointer-events-auto">
+                    <div className="bg-black/30 backdrop-blur-md rounded-full p-1.5 border border-white/10 shadow-lg">
+                        <ThemeToggle />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded bg-green-500 overflow-hidden border-2 border-white/20 shadow-lg">
+                            <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent('User Name')}&background=random`} alt="Profile" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Immersive Hero Section (100vh) */}
+            <div className="relative w-full h-screen overflow-hidden group">
+                {/* Background Video */}
+                <div className="absolute inset-0 w-full h-full">
+                    <video
+                        key={destination.id}
+                        ref={videoRef}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover scale-[1.01]"
+                        poster={destination.images?.[0] || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop'}
+                    >
+                        {(() => {
+                            const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+                            const name = normalize(destination.name);
+                            let videoSrc = null;
+
+                            if (name.includes('simspark')) videoSrc = "/videos/Coonoor - Sim's Park.mp4";
+                            else if (name.includes('botanical')) videoSrc = "/videos/GovernmentBotanicalGarden.mp4";
+                            else if (name.includes('doddabetta')) videoSrc = "/videos/Doddabetta Peak.mp4";
+                            else if (name.includes('pykara')) videoSrc = "/videos/Pykara Falls.mp4";
+                            else if (name.includes('pineforest')) videoSrc = "/videos/Pine Forest.mp4";
+                            else if (name.includes('ootylake') || name.includes('boathouse')) videoSrc = "/videos/Ooty Lake.mp4";
+                            else if (name.includes('biosphere') || name.includes('national')) videoSrc = "/videos/Nilgiris Biosphere Reserve.mp4";
+                            else if (name.includes('teamuseum') || name.includes('factory')) videoSrc = "/videos/Tea Museum & Factory.mp4";
+                            else if (name.includes('rosegarden')) videoSrc = "/videos/Rose Garden.mp4";
+                            else if (name.includes('lambsrock')) videoSrc = "/videos/lake.mp4";
+                            else if (name.includes('dolphin')) videoSrc = "/videos/lake.mp4";
+                            else videoSrc = "/videos/Nilgiris Biosphere Reserve.mp4"; // Fallback for any other destination
+
+                            return videoSrc ? <source src={videoSrc} type="video/mp4" /> : null;
+                        })()}
+                    </video>
+                    {/* Minimal Gradient for Text Legibility only at bottom */}
+                    <div className="absolute inset-x-0 bottom-0 h-[60vh] bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                </div>
+
+                {/* Hero Content Layer */}
+                <div className="absolute bottom-0 left-0 w-full px-6 md:px-12 pb-16 md:pb-24 z-20 flex flex-col justify-end h-full pointer-events-none">
+                    <div className="max-w-5xl animate-fade-in-up pointer-events-auto">
+
+                        {/* Meta Tags */}
+                        <div className="flex flex-wrap items-center gap-3 mb-4">
                             {isHighDemand && (
-                                <span className="bg-red-500 text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider animate-pulse flex items-center gap-1.5">
-                                    <AlertTriangle className="h-3 w-3" /> Peak Load
+                                <span className="bg-red-600 text-white text-[10px] md:text-sm font-bold px-3 py-1 rounded uppercase tracking-wider shadow-lg">
+                                    High Demand
                                 </span>
                             )}
+                            <span className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[10px] md:text-sm font-bold px-3 py-1 rounded uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                                <TrendingUp className="h-3 w-3" /> Top Rated
+                            </span>
+                            <span className="text-white/90 text-xs md:text-sm font-bold drop-shadow-md flex items-center gap-1">
+                                <MapPin className="h-3 w-3" /> {destination.locationAddress?.split(',')[1] || 'Nilgiris'}
+                            </span>
                         </div>
-                        <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight leading-none">{destination.name}</h1>
-                        <div className="flex flex-wrap items-center gap-6 text-white/90">
-                            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 shadow-lg">
-                                <MapPin className="h-5 w-5 text-primary-400" />
-                                <span className="text-sm font-medium">{destination.locationAddress}</span>
-                            </div>
-                            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 shadow-lg">
-                                <Clock className="h-5 w-5 text-primary-400" />
-                                <span className="text-sm font-medium">{destination.openingTime} - {destination.closingTime}</span>
-                            </div>
+
+                        {/* Huge Title - Tuned for responsiveness */}
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white drop-shadow-2xl mb-4 md:mb-6 leading-[0.9] text-balance">
+                            {destination.name}
+                        </h1>
+
+                        {/* Brief Description */}
+                        <p className="text-white/90 text-base md:text-xl font-medium max-w-2xl leading-relaxed drop-shadow-lg mb-6 md:mb-8 line-clamp-3 md:line-clamp-none text-pretty">
+                            {destination.description}
+                        </p>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap items-center gap-4">
+                            {(destination.status === 'ACTIVE' && percentage < 100) ? (
+                                <Link
+                                    to={`/book/${destination.id}`}
+                                    className="flex items-center gap-3 bg-white text-black hover:bg-gray-200 px-6 py-3 md:px-8 md:py-4 rounded font-bold text-lg md:text-xl transition-all shadow-xl hover:scale-105 active:scale-95"
+                                >
+                                    <Ticket className="h-5 w-5 md:h-6 md:w-6 fill-black" />
+                                    Book Now
+                                </Link>
+                            ) : (
+                                <button disabled className="flex items-center gap-3 bg-white/50 text-black cursor-not-allowed px-6 py-3 md:px-8 md:py-4 rounded font-bold text-lg md:text-xl">
+                                    <Activity className="h-5 w-5 md:h-6 md:w-6" />
+                                    {isHighDemand ? 'Capacity Full' : 'Unavailable'}
+                                </button>
+                            )}
+
+                            <button
+                                onClick={openLocation}
+                                className="flex items-center gap-3 bg-white/20 hover:bg-white/30 text-white border border-white/30 px-6 py-3 md:px-8 md:py-4 rounded font-bold text-lg md:text-xl backdrop-blur-md transition-all shadow-xl hover:scale-105 active:scale-95"
+                            >
+                                <Info className="h-5 w-5 md:h-6 md:w-6" />
+                                More Info
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <Link
-                    to="/destinations"
-                    className="absolute top-8 left-8 z-30 bg-white/10 backdrop-blur-md text-white px-6 py-2.5 rounded-2xl border border-white/20 hover:bg-white/20 transition-all flex items-center gap-2 font-bold text-sm shadow-xl"
-                >
-                    <ArrowLeft className="h-4 w-4" /> Back to Explore
-                </Link>
+                {/* Scroll Indicator */}
+                <div className="absolute bottom-8 right-12 z-20 animate-bounce pointer-events-none hidden md:block">
+                    <ChevronDown className="h-10 w-10 text-white/50" />
+                </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-30">
-                <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Traffic Redistribution Notice */}
-                        {isHighDemand && alternatives.length > 0 && (
-                            <div className="bg-white rounded-[2rem] shadow-2xl shadow-primary-900/10 border border-warning-200 overflow-hidden group">
-                                <div className="p-1.5 bg-gradient-to-r from-warning-500 to-yellow-400"></div>
-                                <div className="p-8">
-                                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
-                                        <TrendingUp className="h-6 w-6 text-warning-600" /> Carrying Capacity Alert
-                                    </h3>
-                                    <p className="text-gray-600 mb-8 max-w-2xl leading-relaxed">
-                                        <span className="font-bold text-gray-900">{destination.name}</span> is currently operating at <span className="text-danger-600 font-extrabold">{percentage}%</span> carrying capacity.
-                                        To protect the local ecology, we've enabled surge pricing.
-                                        <br /><br />
-                                        Consider these majestic low-traffic alternatives for a more intimate experience:
-                                    </p>
+            {/* Content Section (Below the Fold) */}
+            <div className="relative z-30 bg-white dark:bg-[#141414] min-h-screen px-6 md:px-12 py-16 -mt-2 rounded-t-3xl shadow-[0_-20px_40px_rgba(0,0,0,0.5)] transition-colors duration-300">
 
-                                    <div className="grid gap-6 md:grid-cols-2">
-                                        {alternatives.map(alt => (
-                                            <Link key={alt.id} to={`/destinations/${alt.id}`} className="block bg-primary-50/50 p-6 rounded-3xl border border-primary-100 hover:bg-white hover:shadow-xl hover:shadow-primary-900/5 transition-all group/card">
-                                                <div className="flex flex-col gap-4">
-                                                    <div>
-                                                        <h4 className="text-lg font-extrabold text-gray-900 group-hover/card:text-primary-600 transition-colors mb-2">{alt.name}</h4>
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="h-2 w-2 rounded-full bg-success-500"></div>
-                                                            <span className="text-xs text-primary-700 font-bold uppercase tracking-wider">
-                                                                Optimal Load: {Math.round((alt.currentCapacity / alt.maxDailyCapacity) * 100)}%
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center justify-between mt-2 pt-4 border-t border-primary-100">
-                                                        <span className="text-xs font-bold text-primary-600 flex items-center gap-1">Take Detour <ArrowRight className="h-3 w-3" /></span>
-                                                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                                            <Activity className="h-4 w-4 text-primary-400" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Overview Card */}
-                        <div className="bg-white rounded-[2rem] shadow-sm p-10 border border-primary-50 relative overflow-hidden group">
-                            <div className="absolute top-0 left-0 w-2 h-full bg-primary-100 group-hover:bg-primary-600 transition-colors"></div>
-                            <h2 className="text-3xl font-extrabold text-gray-900 mb-6 tracking-tight">Ecology & Essence</h2>
-                            <p className="text-gray-600 leading-relaxed text-lg whitespace-pre-line mb-10">
-                                {destination.description}
-                            </p>
-
-                            <div className="grid md:grid-cols-2 gap-8 pt-8 border-t border-primary-50">
-                                <div>
-                                    <h3 className="text-sm font-bold text-primary-600 uppercase tracking-[0.2em] mb-4">On-Site Services</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {destination.amenities && (Array.isArray(destination.amenities) ? destination.amenities : JSON.parse(destination.amenities as any)).map((amenity: string, index: number) => (
-                                            <span key={index} className="px-4 py-2 bg-primary-50 text-primary-700 rounded-2xl text-xs font-bold border border-primary-100/50">
-                                                {amenity}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="bg-slate-50 rounded-3xl p-6">
-                                    <p className="text-xs text-slate-500 leading-relaxed">
-                                        Services are maintained by local eco-volunteers and regional authorities to ensure minimal environmental impact.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Zones */}
-                        <div className="bg-white rounded-[2rem] shadow-sm p-10 border border-primary-50">
-                            <div className="flex items-baseline justify-between mb-8">
-                                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Active Zones</h2>
-                                <span className="text-xs font-bold text-primary-600 uppercase tracking-widest">{destination.zones.length} Regulated Areas</span>
-                            </div>
-                            <div className="grid gap-4">
-                                {destination.zones.map((zone) => (
-                                    <div key={zone.id} className="group/zone bg-white border border-primary-50 rounded-[1.5rem] p-6 flex items-center justify-between hover:bg-primary-50/50 hover:border-primary-100 transition-all">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-primary-50 rounded-2xl flex items-center justify-center group-hover/zone:bg-white transition-colors">
-                                                <Target className="h-6 w-6 text-primary-400" />
-                                            </div>
-                                            <div>
-                                                <h4 className="font-extrabold text-gray-900 text-lg">{zone.name}</h4>
-                                                <span className="text-[10px] font-bold px-2 py-0.5 bg-primary-100 text-primary-700 rounded-lg uppercase tracking-wider">
-                                                    {zone.zoneType.replace(/_/g, ' ').toLowerCase()}
-                                                </span>
-                                            </div>
+                <div className="max-w-7xl mx-auto space-y-20">
+                    {/* Zones Rail */}
+                    <section>
+                        <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3">
+                            <Target className="h-6 w-6 text-red-600" /> Regulated Zones
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {destination.zones.map((zone) => (
+                                <div key={zone.id} className="bg-gray-50 dark:bg-[#1f1f1f] p-6 rounded-xl border border-gray-100 dark:border-white/5 hover:border-red-500/30 transition-all group">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h4 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-red-500 transition-colors">{zone.name}</h4>
+                                            <p className="text-sm text-gray-500 uppercase tracking-widest mt-1">{zone.zoneType.replace(/_/g, ' ')}</p>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Occupancy</div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden hidden sm:block">
-                                                    <div
-                                                        className="h-full bg-primary-500 rounded-full"
-                                                        style={{ width: `${Math.min(100, (zone.currentCapacity / zone.maxCapacity) * 100)}%` }}
-                                                    ></div>
-                                                </div>
-                                                <div className="font-extrabold text-gray-900 font-mono">
-                                                    {zone.currentCapacity}<span className="text-gray-300 mx-1">/</span>{zone.maxCapacity}
-                                                </div>
-                                            </div>
+                                            <span className="text-2xl font-bold text-gray-900 dark:text-white">{zone.currentCapacity}</span>
+                                            <span className="text-sm text-gray-400 block">/ {zone.maxCapacity}</span>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                    <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                                        <div className="bg-red-600 h-full transition-all duration-1000" style={{ width: `${(zone.currentCapacity / zone.maxCapacity) * 100}%` }}></div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
+                    </section>
 
-                        {/* Guidelines */}
-                        <div className="relative group overflow-hidden bg-primary-900 rounded-[2rem] p-10 shadow-xl shadow-primary-900/20">
-                            <div className="absolute top-0 right-0 p-8 text-primary-800 pointer-events-none group-hover:rotate-12 transition-transform opacity-30">
-                                <Leaf className="h-32 w-32" />
-                            </div>
-                            <div className="flex items-start gap-6 relative z-10">
-                                <div className="w-12 h-12 bg-primary-800 rounded-2xl flex items-center justify-center text-primary-400 flex-shrink-0">
-                                    <Info className="h-6 w-6" />
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-3xl font-extrabold text-white mb-4 tracking-tight">Eco-Regulations</h3>
-                                    <p className="text-primary-100 leading-relaxed text-lg font-medium">
-                                        {destination.guidelines}
-                                    </p>
-                                    <div className="mt-8 flex items-center gap-3">
-                                        <Shield className="h-5 w-5 text-primary-500" />
-                                        <span className="text-primary-300 text-xs font-bold uppercase tracking-widest">Compliance mandatory for entry</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Sidebar */}
-                    <div className="lg:col-span-1 space-y-6">
-                        {/* Live Capacity Card */}
-                        <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-primary-900/5 p-10 border border-primary-50 sticky top-24 overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-2 bg-primary-100"></div>
-
-                            <div className="flex items-center justify-between mb-10">
-                                <div className="flex items-center gap-3">
-                                    <span className="relative flex h-3 w-3">
-                                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${percentage >= 90 ? 'bg-red-400' : 'bg-green-400'}`}></span>
-                                        <span className={`relative inline-flex rounded-full h-3 w-3 ${percentage >= 90 ? 'bg-red-500' : 'bg-green-500'}`}></span>
-                                    </span>
-                                    <span className="text-xs font-bold text-gray-900 uppercase tracking-[0.2em]">Flow Monitoring</span>
-                                </div>
-                                <Activity className="h-5 w-5 text-primary-200" />
-                            </div>
-
-                            <div className="mb-10 text-center">
-                                <div className="inline-flex flex-col mb-4">
-                                    <span className="text-6xl font-extrabold text-gray-900 tracking-tighter leading-none mb-2">{destination.currentCapacity}</span>
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none">Registered Visitors</span>
-                                </div>
-
-                                <div className="w-full bg-primary-50 rounded-full h-4 overflow-hidden mb-4 p-1">
-                                    <div
-                                        className={`h-full rounded-full transition-all duration-700 ease-out border-r-2 border-white/20 ${percentage >= 90 ? 'bg-danger-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]' :
-                                            percentage >= 70 ? 'bg-warning-500' : 'bg-primary-500 shadow-[0_0_15px_rgba(34,197,94,0.4)]'
-                                            }`}
-                                        style={{ width: `${Math.min(100, percentage)}%` }}
-                                    ></div>
-                                </div>
-
-                                <div className="flex items-center justify-center gap-4">
-                                    <div className={`text-sm font-extrabold uppercase tracking-widest ${getCapacityColor(destination.currentCapacity, destination.maxDailyCapacity)}`}>
-                                        {percentage}% Total Load
-                                    </div>
-                                    <div className="h-1 w-1 rounded-full bg-gray-300"></div>
-                                    <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Max: {destination.maxDailyCapacity}</div>
-                                </div>
-                            </div>
-
-                            {destination.status === 'ACTIVE' ? (
-                                percentage >= 100 ? (
-                                    <div className="bg-danger-50 rounded-3xl p-6 border border-danger-100 mb-8">
-                                        <div className="flex items-center gap-3 mb-2 text-danger-700">
-                                            <AlertTriangle className="h-5 w-5" />
-                                            <span className="font-extrabold text-[10px] uppercase tracking-widest">Entry Restricted</span>
-                                        </div>
-                                        <p className="text-xs text-danger-600/80 leading-relaxed font-bold">Scientific carrying capacity reached. No additional bookings allowed for today to prevent ecosystem damage.</p>
-                                    </div>
-                                ) : (
-                                    <Link
-                                        to={`/book/${destination.id}`}
-                                        className={`group relative flex items-center justify-center w-full py-5 rounded-[1.5rem] font-extrabold text-lg transition-all transform hover:-translate-y-1 active:scale-95 mb-8 ${isHighDemand
-                                            ? 'bg-warning-600 text-white shadow-xl shadow-warning-600/30 overflow-hidden'
-                                            : 'bg-primary-800 text-white shadow-xl shadow-primary-900/30 overflow-hidden group'
-                                            }`}
-                                    >
-                                        <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-[-30deg]"></div>
-                                        <span className="relative z-10 flex items-center gap-3">
-                                            {isHighDemand ? 'Redeem Surge Access' : 'Generate Entry Pass'}
-                                            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                        </span>
-                                    </Link>
-                                )
-                            ) : (
-                                <div className="bg-slate-100 text-slate-400 p-6 rounded-[1.5rem] text-center font-extrabold uppercase tracking-widest text-sm mb-8 border border-slate-200">
-                                    Venue Suspended
-                                </div>
-                            )}
-
-                            <div className="bg-primary-50/50 rounded-3xl p-8 border border-primary-100">
-                                <div className="flex justify-between items-center mb-4">
-                                    <span className="text-[10px] font-bold text-primary-700 uppercase tracking-widest italic">Official Levy</span>
-                                    <div className="flex flex-col items-end">
-                                        {isHighDemand && <span className="text-[10px] text-danger-400 font-bold line-through mb-1">Standard: ₹{destination.pricingRules[0]?.basePrice || 0}</span>}
-                                        <div className="flex items-center gap-2">
-                                            <span className={`text-[10px] font-bold uppercase tracking-tighter ${isHighDemand ? 'text-danger-600' : 'text-primary-600'}`}>INR</span>
-                                            <span className={`text-4xl font-black tracking-tighter text-gray-900 ${isHighDemand ? 'text-danger-600' : ''}`}>
-                                                {isHighDemand
-                                                    ? Math.round((destination.pricingRules[0]?.basePrice || 0) * 1.2)
-                                                    : (destination.pricingRules[0]?.basePrice || 0)
-                                                }
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p className="text-[10px] text-center text-primary-400/80 font-bold leading-relaxed">
-                                    {isHighDemand
-                                        ? 'Sovereign levy includes 20% surge for restoration.'
-                                        : 'Proceeds support biodiversity conservation projects.'}
+                    {/* About & Info Grid */}
+                    <section className="grid lg:grid-cols-2 gap-12">
+                        <div className="space-y-6">
+                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                <Leaf className="h-6 w-6 text-green-500" /> Ecological Guidelines
+                            </h3>
+                            <div className="bg-green-50/50 dark:bg-green-900/10 p-8 rounded-2xl border border-green-100 dark:border-green-500/20">
+                                <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed whitespace-pre-line">
+                                    {destination.guidelines}
                                 </p>
                             </div>
                         </div>
-                    </div>
+
+                        <div className="space-y-6">
+                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                <Shield className="h-6 w-6 text-blue-500" /> Amenities & Services
+                            </h3>
+                            <div className="flex flex-wrap gap-3">
+                                {destination.amenities && (Array.isArray(destination.amenities) ? destination.amenities : JSON.parse(destination.amenities as any)).map((amenity: string, idx: number) => (
+                                    <span key={idx} className="px-4 py-2 bg-gray-100 dark:bg-[#252525] rounded-lg text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/5 font-medium">
+                                        {amenity}
+                                    </span>
+                                ))}
+                            </div>
+
+                            <div className="mt-8 p-6 bg-gray-50 dark:bg-[#1f1f1f] rounded-xl flex justify-between items-center">
+                                <div>
+                                    <span className="text-sm text-gray-500 uppercase tracking-widest font-bold">Base Entry Fee</span>
+                                    <div className="text-3xl font-black text-gray-900 dark:text-white mt-1">₹{destination.pricingRules[0]?.basePrice}</div>
+                                </div>
+                                <button className="text-red-600 font-bold hover:underline">View Breakdown</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Similar Destinations */}
+                    {alternatives.length > 0 && (
+                        <section>
+                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8">You Might Also Like</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                {alternatives.map((alt) => (
+                                    <Link key={alt.id} to={`/destinations/${alt.id}`} className="group block">
+                                        <div className="aspect-[4/5] rounded-xl overflow-hidden relative mb-4">
+                                            <img src={alt.images?.[0] || `https://source.unsplash.com/random/800x600?nature,${alt.id}`} alt={alt.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+                                            <div className="absolute bottom-4 left-4 right-4">
+                                                <h4 className="text-lg font-bold text-white mb-1">{alt.name}</h4>
+                                                <div className="flex items-center gap-2 text-xs text-white/80">
+                                                    <span className="bg-green-500/20 px-2 py-0.5 rounded border border-green-500/30 text-green-300 font-bold">
+                                                        {Math.round((alt.currentCapacity / alt.maxDailyCapacity) * 100)}% Load
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </section>
+                    )}
                 </div>
             </div>
         </div>
