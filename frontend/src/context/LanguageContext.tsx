@@ -22,6 +22,9 @@ interface Translations {
     viewDetails: string;
     noDestinations: string;
     signIn: string;
+    home: string;
+    explore: string;
+    community: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -44,7 +47,10 @@ const translations: Record<Language, Translations> = {
         searchPlaceholder: "Search by name, location or type...",
         viewDetails: "View Details",
         noDestinations: "No Destinations Found",
-        signIn: "Sign In"
+        signIn: "Sign In",
+        home: "Home",
+        explore: "Explore",
+        community: "Community"
     },
     ta: {
         heroTitle: "பொருளாதார நன்மைகளை சூழலியல் நிலைத்தன்மையுடன் சமநிலைப்படுத்துதல்",
@@ -65,7 +71,10 @@ const translations: Record<Language, Translations> = {
         searchPlaceholder: "பெயர், இடம் அல்லது வகையை தேடவும்...",
         viewDetails: "விவரங்களைப் பார்க்க",
         noDestinations: "இடங்கள் எதுவும் கிடைக்கவில்லை",
-        signIn: "உள்நுழைய"
+        signIn: "உள்நுழைய",
+        home: "முகப்பு",
+        explore: "ஆராய",
+        community: "சமூகம்"
     },
     hi: {
         heroTitle: "पारिस्थितिक स्थिरता के साथ आर्थिक लाभों को संतुलित करना",
@@ -86,7 +95,10 @@ const translations: Record<Language, Translations> = {
         searchPlaceholder: "नाम, स्थान या प्रकार से खोजें...",
         viewDetails: "विवरण देखें",
         noDestinations: "कोई गंतव्य नहीं मिला",
-        signIn: "साइन इन करें"
+        signIn: "साइन इन करें",
+        home: "होम",
+        explore: "अन्वेषण",
+        community: "समुदाय"
     }
 };
 

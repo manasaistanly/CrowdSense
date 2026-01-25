@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Leaf, Calendar, MapPin, Users, LogOut, Home } from 'lucide-react';
+import { Calendar, MapPin, Users } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../stores/authStore';
-import ThemeToggle from '../components/ThemeToggle';
+import Navbar from '../components/Navbar';
 
 interface Booking {
     id: string;
@@ -19,7 +19,7 @@ interface Booking {
 }
 
 export default function DashboardPage() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
@@ -69,49 +69,13 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-            {/* Header */}
-            <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <Link to="/" className="flex items-center gap-2">
-                            <Leaf className="h-8 w-8 text-primary-600" />
-                            <span className="text-xl font-bold text-gray-900 dark:text-white">SustainaTour</span>
-                        </Link>
-                        <div className="flex items-center gap-6">
-                            <ThemeToggle />
-                            <Link to="/" className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 transition-colors">
-                                <Home className="h-5 w-5" />
-                                <span>Home</span>
-                            </Link>
-                            <Link to="/destinations" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 transition-colors">
-                                Explore
-                            </Link>
-                            <Link to="/community" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 transition-colors">
-                                Community
-                            </Link>
-                            <Link to="/dashboard" className="text-primary-600 dark:text-primary-400 font-semibold transition-colors">
-                                Dashboard
-                            </Link>
-                            <button
-                                onClick={() => {
-                                    logout();
-                                    navigate('/');
-                                }}
-                                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-danger-600 dark:hover:text-danger-400 transition-colors"
-                            >
-                                <LogOut className="h-5 w-5" />
-                                <span>Logout</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            <Navbar />
 
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Welcome Section */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8 border border-gray-100 dark:border-gray-700 transition-colors">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                         Welcome back, {user.firstName}!
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400">
@@ -120,7 +84,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Stats */}
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 transition-colors">
                         <div className="flex items-center justify-between">
                             <div>
@@ -163,7 +127,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Bookings */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors overflow-hidden">
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">My Bookings</h2>
                     </div>
@@ -191,9 +155,9 @@ export default function DashboardPage() {
                         <div className="divide-y divide-gray-200 dark:divide-gray-700">
                             {bookings.map((booking) => (
                                 <div key={booking.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                                    <div className="flex items-start justify-between">
+                                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                                         <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
+                                            <div className="flex items-center gap-3 mb-2 flex-wrap">
                                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                                     {booking.destination.name}
                                                 </h3>
@@ -202,7 +166,7 @@ export default function DashboardPage() {
                                                 </span>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-400">
                                                 <div className="flex items-center gap-2">
                                                     <Calendar className="h-4 w-4" />
                                                     <span>{new Date(booking.visitDate).toLocaleDateString()}</span>
@@ -211,10 +175,11 @@ export default function DashboardPage() {
                                                     <Users className="h-4 w-4" />
                                                     <span>{booking.numberOfVisitors} visitors</span>
                                                 </div>
-                                                <div>
-                                                    <span className="font-medium">Ref:</span> {booking.bookingReference}
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-medium">Ref:</span>
+                                                    <span className="font-mono">{booking.bookingReference}</span>
                                                 </div>
-                                                <div>
+                                                <div className="flex items-center gap-2">
                                                     <span className="font-medium">Total:</span> ₹{booking.totalPrice}
                                                 </div>
                                             </div>
@@ -222,7 +187,7 @@ export default function DashboardPage() {
 
                                         <Link
                                             to={`/booking/${booking.id}`}
-                                            className="ml-4 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-sm font-medium"
+                                            className="w-full md:w-auto px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition text-sm font-medium text-center"
                                         >
                                             View Details
                                         </Link>

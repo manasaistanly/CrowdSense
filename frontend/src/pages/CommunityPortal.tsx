@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
-import ThemeToggle from '../components/ThemeToggle';
+import Navbar from '../components/Navbar';
 
 interface DestinationSimple {
     id: string;
@@ -125,9 +125,7 @@ export default function CommunityPortal() {
 
     return (
         <div className="min-h-screen bg-gray-50 relative dark:bg-[#111] transition-colors duration-300">
-            <div className="absolute top-4 right-4 z-50">
-                <ThemeToggle />
-            </div>
+            <Navbar />
             {/* Hero Section */}
             <div className="bg-primary-700 text-white py-12">
                 <div className="max-w-4xl mx-auto px-6 text-center">

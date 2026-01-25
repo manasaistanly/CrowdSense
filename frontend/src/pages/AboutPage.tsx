@@ -1,23 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Shield, AlertTriangle, Leaf, Volume2, ArrowLeft, Bus, Trash2 } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+import { Shield, AlertTriangle, Leaf, Volume2, Bus, Trash2 } from 'lucide-react';
+import Navbar from '../components/Navbar';
 
 export default function AboutPage() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-gray-900 font-sans transition-colors duration-300">
-            {/* Header / Nav */}
-            <nav className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 p-4 sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto flex justify-between items-center">
-                    <Link to="/" className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-primary-600 transition">
-                        <ArrowLeft className="h-5 w-5" />
-                        <span className="font-semibold">Back to Home</span>
-                    </Link>
-                    <div className="flex items-center gap-4">
-                        <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">SustainaTour Regulations</span>
-                        <ThemeToggle />
-                    </div>
-                </div>
-            </nav>
+            <Navbar />
 
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 {/* Hero Section */}

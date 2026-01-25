@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Users, Search, Leaf, LogOut, ArrowRight } from 'lucide-react';
+import { MapPin, Users, Search, ArrowRight } from 'lucide-react';
 import api from '../lib/api';
-import { useAuth } from '../stores/authStore';
-import ThemeToggle from '../components/ThemeToggle';
-import LanguageToggle from '../components/LanguageToggle';
+import Navbar from '../components/Navbar';
 import { useLanguage } from '../context/LanguageContext';
 
 interface Destination {
@@ -20,7 +18,6 @@ interface Destination {
 }
 
 export default function DestinationsPage() {
-    const { user, logout } = useAuth();
     const { t } = useLanguage();
     const [destinations, setDestinations] = useState<Destination[]>([]);
     const [loading, setLoading] = useState(true);
@@ -55,48 +52,7 @@ export default function DestinationsPage() {
             <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-primary-100/40 dark:bg-primary-900/20 rounded-full blur-3xl pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-primary-100/40 dark:bg-primary-900/20 rounded-full blur-3xl pointer-events-none"></div>
 
-            {/* Header */}
-            <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-primary-100 dark:border-gray-700 sticky top-0 z-50 transition-colors">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <Link to="/" className="flex items-center gap-2 group">
-                            <Leaf className="h-8 w-8 text-primary-600 group-hover:rotate-12 transition-transform" />
-                            <span className="text-xl font-bold bg-gradient-to-r from-primary-900 to-primary-600 dark:from-primary-400 dark:to-primary-200 bg-clip-text text-transparent">SustainaTour</span>
-                        </Link>
-                        <div className="flex items-center gap-6">
-                            <LanguageToggle />
-                            <ThemeToggle />
-                            {user ? (
-                                <>
-                                    <Link to="/dashboard" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
-                                        Dashboard
-                                    </Link>
-                                    <div className="flex items-center gap-3 pl-6 border-l border-gray-200 dark:border-gray-700">
-                                        <div className="text-right hidden sm:block">
-                                            <p className="text-sm font-bold text-gray-900 dark:text-gray-100 leading-none">{user.firstName} {user.lastName}</p>
-                                            <p className="text-[10px] text-primary-600 dark:text-primary-400 font-bold uppercase tracking-wider mt-1">{user.role}</p>
-                                        </div>
-                                        <button
-                                            onClick={logout}
-                                            className="p-2 text-gray-400 hover:text-danger-500 transition hover:bg-danger-50 dark:hover:bg-danger-900/30 rounded-lg"
-                                            title="Logout"
-                                        >
-                                            <LogOut className="h-5 w-5" />
-                                        </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <Link
-                                    to="/login"
-                                    className="bg-primary-600 text-white px-5 py-2 rounded-lg hover:bg-primary-700 transition shadow-lg shadow-primary-500/20 font-medium"
-                                >
-                                    {t.signIn}
-                                </Link>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            <Navbar />
 
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">

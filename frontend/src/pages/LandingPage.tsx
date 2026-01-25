@@ -1,115 +1,14 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Leaf, Shield, Activity, BarChart3, ArrowRight, Menu, X } from 'lucide-react';
-import { useAuth } from '../stores/authStore';
-import ThemeToggle from '../components/ThemeToggle';
-import LanguageToggle from '../components/LanguageToggle';
+import { Leaf, Shield, Activity, BarChart3, ArrowRight } from 'lucide-react';
+import Navbar from '../components/Navbar';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function LandingPage() {
-    const { user } = useAuth();
     const { t } = useLanguage();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-gray-900 font-sans transition-colors duration-300">
-            {/* Navigation */}
-            <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-20">
-                        <div className="flex items-center gap-3">
-                            <img src="/logo.png" alt="SustainaTour Government Seal" className="h-12 w-auto" />
-                            <div>
-                                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">SustainaTour</h1>
-                                <p className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mt-0.5">Ecological Tourism Management Platform</p>
-                            </div>
-                        </div>
-                        <div className="hidden md:flex items-center gap-6">
-                            <LanguageToggle />
-                            <ThemeToggle />
-                            <a href="#mission" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400">{t.ourMission}</a>
-                            <a href="#impact" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400">{t.regulatoryImpact}</a>
-                            {user ? (
-                                <Link
-                                    to={user.role === 'TOURIST' ? '/dashboard' : '/admin/dashboard'}
-                                    className="bg-primary-700 text-white px-5 py-2.5 rounded-lg hover:bg-primary-800 font-medium transition shadow-sm"
-                                >
-                                    {t.dashboard}
-                                </Link>
-                            ) : (
-                                <div className="flex items-center gap-3">
-                                    <Link to="/login" className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary-700 dark:hover:text-primary-400">
-                                        {t.login}
-                                    </Link>
-                                    <Link
-                                        to="/register"
-                                        className="bg-primary-700 text-white px-5 py-2.5 rounded-lg hover:bg-primary-800 font-medium transition shadow-sm"
-                                    >
-                                        {t.register}
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Mobile Menu Button */}
-                        <div className="md:hidden flex items-center gap-4">
-                            <LanguageToggle />
-                            <ThemeToggle />
-                            <button
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 focus:outline-none"
-                            >
-                                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Mobile Menu Dropdown */}
-                {isMenuOpen && (
-                    <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 absolute w-full z-50 shadow-xl">
-                        <div className="px-4 py-6 space-y-4 flex flex-col">
-                            <a
-                                href="#mission"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="text-base font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400 py-2 border-b border-gray-100 dark:border-gray-800"
-                            >
-                                {t.ourMission}
-                            </a>
-                            <a
-                                href="#impact"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="text-base font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400 py-2 border-b border-gray-100 dark:border-gray-800"
-                            >
-                                {t.regulatoryImpact}
-                            </a>
-                            {user ? (
-                                <Link
-                                    to={user.role === 'TOURIST' ? '/dashboard' : '/admin/dashboard'}
-                                    className="bg-primary-700 text-white px-5 py-3 rounded-lg hover:bg-primary-800 font-medium transition shadow-sm text-center mt-2"
-                                >
-                                    Go to Dashboard
-                                </Link>
-                            ) : (
-                                <div className="flex flex-col gap-3 mt-2">
-                                    <Link
-                                        to="/login"
-                                        className="text-center py-3 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-primary-700 border border-gray-200 dark:border-gray-700 rounded-lg"
-                                    >
-                                        Log In
-                                    </Link>
-                                    <Link
-                                        to="/register"
-                                        className="bg-primary-700 text-white px-5 py-3 rounded-lg hover:bg-primary-800 font-medium transition shadow-sm text-center"
-                                    >
-                                        Register
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </nav>
+            <Navbar />
 
             {/* Hero Section */}
             <div className="relative bg-slate-900 text-white overflow-hidden">
@@ -122,12 +21,12 @@ export default function LandingPage() {
                     />
                 </div>
 
-                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-32">
                     <div className="max-w-2xl">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-900/50 border border-primary-500/30 text-primary-300 text-sm font-semibold mb-6">
                             <Shield className="h-4 w-4" /> Official Regulatory Platform
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                        <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
                             {t.heroTitle}
                         </h1>
                         <p className="text-lg md:text-xl text-slate-300 mb-8 leading-relaxed">
@@ -152,16 +51,16 @@ export default function LandingPage() {
             </div>
 
             {/* Mission Grid */}
-            <div id="mission" className="py-24 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <div id="mission" className="py-16 md:py-24 bg-white dark:bg-gray-900 transition-colors duration-300">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-6 tracking-tight">{t.missionTitle}</h2>
-                        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                    <div className="text-center mb-12 md:mb-16">
+                        <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-6 tracking-tight">{t.missionTitle}</h2>
+                        <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
                             {t.missionDesc}
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                         {[
                             {
                                 icon: <Activity className="h-8 w-8 text-blue-600" />,
@@ -184,7 +83,7 @@ export default function LandingPage() {
                                 desc: 'Harmonize economic tourism benefits with long-term ecological preservation.'
                             }
                         ].map((item, index) => (
-                            <div key={index} className="bg-slate-50 rounded-xl p-8 border border-slate-100 hover:shadow-md transition">
+                            <div key={index} className="bg-slate-50 rounded-xl p-6 md:p-8 border border-slate-100 hover:shadow-md transition">
                                 <div className="bg-white w-14 h-14 rounded-lg shadow-sm flex items-center justify-center mb-6">
                                     {item.icon}
                                 </div>
@@ -199,14 +98,14 @@ export default function LandingPage() {
             </div>
 
             {/* Regulatory Impact Story Section */}
-            <div id="impact" className="py-24 bg-slate-50 dark:bg-gray-800 transition-colors duration-300">
+            <div id="impact" className="py-16 md:py-24 bg-slate-50 dark:bg-gray-800 transition-colors duration-300">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
                         <div>
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm font-bold mb-6">
                                 <Activity className="h-4 w-4" /> Real-World Impact
                             </div>
-                            <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-6 leading-tight">
+                            <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-6 leading-tight">
                                 {t.impactTitle} <span className="text-primary-600 dark:text-primary-400">Harmony</span>.
                             </h2>
                             <div className="space-y-6 text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
@@ -229,7 +128,7 @@ export default function LandingPage() {
                             <img
                                 src="https://images.unsplash.com/photo-1549366021-9f761d450615?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
                                 alt="Elephants in harmony"
-                                className="relative rounded-3xl shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500 border-4 border-white dark:border-gray-700"
+                                className="relative rounded-3xl shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500 border-4 border-white dark:border-gray-700 w-full"
                             />
                             <div className="absolute -bottom-6 -left-6 bg-white dark:bg-gray-700 p-6 rounded-xl shadow-xl border border-gray-100 dark:border-gray-600 max-w-xs hidden md:block">
                                 <div className="flex items-center gap-4 mb-2">
@@ -266,9 +165,9 @@ export default function LandingPage() {
             </div>
 
             {/* CTA Section */}
-            <div className="bg-slate-900 py-20 border-t border-slate-800">
+            <div className="bg-slate-900 py-16 md:py-20 border-t border-slate-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-3xl font-bold text-white mb-6">Compliance & Access Control</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">Compliance & Access Control</h2>
                     <p className="text-slate-400 mb-8 max-w-2xl mx-auto">
                         All visitors must carry a valid digital entry pass. QR codes are validated at checkposts for single-entry access to regulated zones.
                     </p>
