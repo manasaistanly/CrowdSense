@@ -4,6 +4,8 @@ import { MapPin, Users, Search, Leaf, LogOut, ArrowRight } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../stores/authStore';
 import ThemeToggle from '../components/ThemeToggle';
+import LanguageToggle from '../components/LanguageToggle';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Destination {
     id: string;
@@ -19,6 +21,7 @@ interface Destination {
 
 export default function DestinationsPage() {
     const { user, logout } = useAuth();
+    const { t } = useLanguage();
     const [destinations, setDestinations] = useState<Destination[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -61,6 +64,7 @@ export default function DestinationsPage() {
                             <span className="text-xl font-bold bg-gradient-to-r from-primary-900 to-primary-600 dark:from-primary-400 dark:to-primary-200 bg-clip-text text-transparent">SustainaTour</span>
                         </Link>
                         <div className="flex items-center gap-6">
+                            <LanguageToggle />
                             <ThemeToggle />
                             {user ? (
                                 <>
@@ -86,7 +90,7 @@ export default function DestinationsPage() {
                                     to="/login"
                                     className="bg-primary-600 text-white px-5 py-2 rounded-lg hover:bg-primary-700 transition shadow-lg shadow-primary-500/20 font-medium"
                                 >
-                                    Sign In
+                                    {t.signIn}
                                 </Link>
                             )}
                         </div>
@@ -100,13 +104,13 @@ export default function DestinationsPage() {
                 <div className="mb-12">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="h-px w-12 bg-primary-200 dark:bg-primary-800"></div>
-                        <span className="text-primary-600 dark:text-primary-400 font-bold uppercase tracking-widest text-xs">Explore Local Heritage</span>
+                        <span className="text-primary-600 dark:text-primary-400 font-bold uppercase tracking-widest text-xs">{t.exploreHeritage}</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4 tracking-tight">
-                        Discover the <span className="text-primary-600 dark:text-primary-400">Nilgiris</span>
+                        {t.discoverNilgiris} <span className="text-primary-600 dark:text-primary-400">Nilgiris</span>
                     </h1>
                     <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
-                        Explore our curated selection of sustainable tourism destinations. We balance visitor experiences with ecological preservation.
+                        {t.worldCurated}
                     </p>
                 </div>
 
@@ -118,7 +122,7 @@ export default function DestinationsPage() {
                             <Search className="ml-4 h-5 w-5 text-primary-400" />
                             <input
                                 type="text"
-                                placeholder="Search by name, location or type..."
+                                placeholder={t.searchPlaceholder}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="w-full pl-3 pr-4 py-3 bg-transparent outline-none text-gray-900 dark:text-white placeholder:text-gray-400"
@@ -149,20 +153,45 @@ export default function DestinationsPage() {
                             >
                                 {/* Image Container */}
                                 <div className="relative h-64 overflow-hidden">
-                                    {destination.images && destination.images.length > 0 ? (
-                                        <img
-                                            src={typeof destination.images === 'string' ? JSON.parse(destination.images)[0] : destination.images[0]}
-                                            alt={destination.name}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop';
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-primary-100 to-primary-50 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-                                            <Leaf className="h-16 w-16 text-primary-200 dark:text-gray-600" />
-                                        </div>
-                                    )}
+                                    {/* Custom Image Logic */}
+                                    {(() => {
+                                        const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+                                        const name = normalize(destination.name);
+                                        let imgSrc = null;
+
+                                        // Specific overrides with reliable Unsplash IDs - Updated 
+                                        // Specific overrides - FORCE Ooty Lake
+                                        if (name.includes('ooty') && (name.includes('lake') || name.includes('boat'))) {
+                                            imgSrc = "https://images.unsplash.com/photo-1578509395623-a5509ae3d288?auto=format&fit=crop&w=800&q=80";
+                                        }
+                                        else if (destination.slug === 'ooty-lake') {
+                                            imgSrc = "https://images.unsplash.com/photo-1578509395623-a5509ae3d288?auto=format&fit=crop&w=800&q=80";
+                                        }
+                                        else if (name.includes('mudumalai') || name.includes('nationalpark')) imgSrc = "https://images.unsplash.com/photo-1549366021-9f761d450615?auto=format&fit=crop&w=800&q=80"; // Elephant
+                                        else if (name.includes('coonoor') || name.includes('simspark')) imgSrc = "https://images.unsplash.com/photo-1516690561799-46d8f74f9abf?auto=format&fit=crop&w=800&q=80"; // Hills/Tea Estate
+                                        else if (name.includes('doddabetta')) imgSrc = "https://images.unsplash.com/photo-1582539061545-56623f02e42e?auto=format&fit=crop&w=800&q=80"; // Peak
+
+                                        // Default fallback
+                                        if (!imgSrc && destination.images && destination.images.length > 0) {
+                                            imgSrc = typeof destination.images === 'string' ? JSON.parse(destination.images)[0] : destination.images[0];
+                                        }
+
+                                        return (
+                                            <img
+                                                src={imgSrc || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop'}
+                                                alt={destination.name}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    // If the custom image fails, try a different reliable local or remote fallback
+                                                    // Prevent infinite loop by checking if currently source is already the fallback
+                                                    if (!target.src.includes('1469474968028')) {
+                                                        target.src = 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&h=600&fit=crop';
+                                                    }
+                                                }}
+                                            />
+                                        );
+                                    })()}
 
                                     {/* Glass Overlay for Type */}
                                     <div className="absolute top-4 left-4 z-10">
@@ -205,7 +234,7 @@ export default function DestinationsPage() {
                                     {/* Footer */}
                                     <div className="pt-6 border-t border-primary-50 dark:border-gray-700 flex items-center justify-between">
                                         <div className="text-xs font-bold uppercase tracking-wider text-primary-700 dark:text-primary-400 group-hover:translate-x-1 transition-transform flex items-center gap-2">
-                                            View Details <ArrowRight className="h-3.5 w-3.5" />
+                                            {t.viewDetails} <ArrowRight className="h-3.5 w-3.5" />
                                         </div>
                                         <div className="flex -space-x-2">
                                             {[1, 2, 3].map((i) => (
@@ -228,7 +257,7 @@ export default function DestinationsPage() {
                     <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-24 text-center border border-primary-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-100 via-primary-500 to-primary-100 dark:from-gray-700 dark:via-primary-600 dark:to-gray-700"></div>
                         <Search className="h-16 w-16 text-primary-100 dark:text-gray-700 mx-auto mb-6" />
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No Destinations Found</h3>
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t.noDestinations}</h3>
                         <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
                             We couldn't find anything matching your search. Try adjusting your filters or search terms.
                         </p>

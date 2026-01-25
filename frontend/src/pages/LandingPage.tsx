@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Leaf, Shield, Activity, BarChart3, ArrowRight } from 'lucide-react';
+import { Leaf, Shield, Activity, BarChart3, ArrowRight, Menu, X } from 'lucide-react';
 import { useAuth } from '../stores/authStore';
 import ThemeToggle from '../components/ThemeToggle';
+import LanguageToggle from '../components/LanguageToggle';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function LandingPage() {
     const { user } = useAuth();
+    const { t } = useLanguage();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-gray-900 font-sans transition-colors duration-300">
@@ -20,32 +25,90 @@ export default function LandingPage() {
                             </div>
                         </div>
                         <div className="hidden md:flex items-center gap-6">
+                            <LanguageToggle />
                             <ThemeToggle />
-                            <a href="#mission" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400">Our Mission</a>
-                            <a href="#impact" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400">Regulatory Impact</a>
+                            <a href="#mission" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400">{t.ourMission}</a>
+                            <a href="#impact" className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400">{t.regulatoryImpact}</a>
                             {user ? (
                                 <Link
                                     to={user.role === 'TOURIST' ? '/dashboard' : '/admin/dashboard'}
                                     className="bg-primary-700 text-white px-5 py-2.5 rounded-lg hover:bg-primary-800 font-medium transition shadow-sm"
                                 >
-                                    Go to Dashboard
+                                    {t.dashboard}
                                 </Link>
                             ) : (
                                 <div className="flex items-center gap-3">
                                     <Link to="/login" className="text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-primary-700 dark:hover:text-primary-400">
-                                        Staff Login
+                                        {t.login}
                                     </Link>
                                     <Link
                                         to="/register"
                                         className="bg-primary-700 text-white px-5 py-2.5 rounded-lg hover:bg-primary-800 font-medium transition shadow-sm"
                                     >
-                                        Tourist Registration
+                                        {t.register}
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Mobile Menu Button */}
+                        <div className="md:hidden flex items-center gap-4">
+                            <LanguageToggle />
+                            <ThemeToggle />
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 focus:outline-none"
+                            >
+                                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Mobile Menu Dropdown */}
+                {isMenuOpen && (
+                    <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 absolute w-full z-50 shadow-xl">
+                        <div className="px-4 py-6 space-y-4 flex flex-col">
+                            <a
+                                href="#mission"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-base font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400 py-2 border-b border-gray-100 dark:border-gray-800"
+                            >
+                                {t.ourMission}
+                            </a>
+                            <a
+                                href="#impact"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-base font-medium text-gray-600 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-400 py-2 border-b border-gray-100 dark:border-gray-800"
+                            >
+                                {t.regulatoryImpact}
+                            </a>
+                            {user ? (
+                                <Link
+                                    to={user.role === 'TOURIST' ? '/dashboard' : '/admin/dashboard'}
+                                    className="bg-primary-700 text-white px-5 py-3 rounded-lg hover:bg-primary-800 font-medium transition shadow-sm text-center mt-2"
+                                >
+                                    Go to Dashboard
+                                </Link>
+                            ) : (
+                                <div className="flex flex-col gap-3 mt-2">
+                                    <Link
+                                        to="/login"
+                                        className="text-center py-3 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-primary-700 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                    >
+                                        Log In
+                                    </Link>
+                                    <Link
+                                        to="/register"
+                                        className="bg-primary-700 text-white px-5 py-3 rounded-lg hover:bg-primary-800 font-medium transition shadow-sm text-center"
+                                    >
+                                        Register
                                     </Link>
                                 </div>
                             )}
                         </div>
                     </div>
-                </div>
+                )}
             </nav>
 
             {/* Hero Section */}
@@ -65,23 +128,23 @@ export default function LandingPage() {
                             <Shield className="h-4 w-4" /> Official Regulatory Platform
                         </div>
                         <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                            Balancing Economic Benefits with <span className="text-primary-400">Ecological Sustainability</span>
+                            {t.heroTitle}
                         </h1>
                         <p className="text-lg md:text-xl text-slate-300 mb-8 leading-relaxed">
-                            We implement scientifically grounded carrying capacities to mitigate strain on local ecosystems. Join us in preserving our heritage through adaptive flow regulation.
+                            {t.heroSubtitle}
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Link
                                 to="/destinations"
                                 className="bg-primary-600 text-white px-8 py-4 rounded-lg font-bold hover:bg-primary-700 transition flex items-center justify-center gap-2"
                             >
-                                Plan Your Visit <ArrowRight className="h-5 w-5" />
+                                {t.planVisit} <ArrowRight className="h-5 w-5" />
                             </Link>
                             <Link
                                 to="/about"
                                 className="bg-white/10 backdrop-blur-sm text-white border border-white/20 px-8 py-4 rounded-lg font-semibold hover:bg-white/20 transition text-center"
                             >
-                                View Regulations
+                                {t.viewRegulations}
                             </Link>
                         </div>
                     </div>
@@ -89,12 +152,12 @@ export default function LandingPage() {
             </div>
 
             {/* Mission Grid */}
-            <div id="mission" className="py-24 bg-white">
+            <div id="mission" className="py-24 bg-white dark:bg-gray-900 transition-colors duration-300">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">Core Regulatory Objectives</h2>
-                        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                            Our platform operates on four pillars designed to protect destinations while ensuring quality experiences.
+                        <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-6 tracking-tight">{t.missionTitle}</h2>
+                        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                            {t.missionDesc}
                         </p>
                     </div>
 
@@ -107,8 +170,8 @@ export default function LandingPage() {
                             },
                             {
                                 icon: <BarChart3 className="h-8 w-8 text-green-600" />,
-                                title: 'Regulate Flow',
-                                desc: 'Create adaptive systems that control tourist entry and internal circulation patterns.'
+                                title: 'Smart Regulation',
+                                desc: 'Data-driven insights to manage footfall sustainably.'
                             },
                             {
                                 icon: <Leaf className="h-8 w-8 text-emerald-600" />,
@@ -132,6 +195,73 @@ export default function LandingPage() {
                             </div>
                         ))}
                     </div>
+                </div>
+            </div>
+
+            {/* Regulatory Impact Story Section */}
+            <div id="impact" className="py-24 bg-slate-50 dark:bg-gray-800 transition-colors duration-300">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
+                        <div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-sm font-bold mb-6">
+                                <Activity className="h-4 w-4" /> Real-World Impact
+                            </div>
+                            <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-6 leading-tight">
+                                {t.impactTitle} <span className="text-primary-600 dark:text-primary-400">Harmony</span>.
+                            </h2>
+                            <div className="space-y-6 text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                                <p>
+                                    Imagine a Nilgiris where the winding roads are free of gridlock, where wildlife crosses fearlessly, and where every visitor can hear the wind in the trees, not just engines.
+                                </p>
+                                <p>
+                                    Before SustainaTour, unregulated tourism strained our delicate resources. Water was scarce, roads were clogged, and our precious tigers retreated deeper into the shadows.
+                                </p>
+                                <p className="font-medium text-gray-900 dark:text-white">
+                                    Today, we are writing a new story.
+                                </p>
+                                <p>
+                                    By implementing our <strong>Adaptive Capacity Algorithms</strong>, we have reduced peak-hour density by 40%. We don't just limit entry; we curate the flow of time itself. Every QR code scanned is a promise kep—a promise to the land that we will tread lightly, and a promise to you that your experience will be unhurried, authentic, and truly wild.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-primary-600 rounded-3xl rotate-3 opacity-20 blur-lg"></div>
+                            <img
+                                src="https://images.unsplash.com/photo-1549366021-9f761d450615?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"
+                                alt="Elephants in harmony"
+                                className="relative rounded-3xl shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500 border-4 border-white dark:border-gray-700"
+                            />
+                            <div className="absolute -bottom-6 -left-6 bg-white dark:bg-gray-700 p-6 rounded-xl shadow-xl border border-gray-100 dark:border-gray-600 max-w-xs hidden md:block">
+                                <div className="flex items-center gap-4 mb-2">
+                                    <div className="p-3 bg-green-100 dark:bg-green-900/50 rounded-full text-green-600 dark:text-green-400">
+                                        <Leaf className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <div className="text-2xl font-bold text-gray-900 dark:text-white">-40%</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">Carbon Footprint</div>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-gray-600 dark:text-gray-300 italic">"Tourism and nature finally in balance."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Impact Metrics Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {[
+                            { label: "Traffic Reduction", value: "65%", sub: "Peak Hour Congestion" },
+                            { label: "Wildlife Sightings", value: "+30%", sub: "Due to quieter roads" },
+                            { label: "Waste Recycled", value: "12 Tons", sub: "Monthly average" },
+                            { label: "Local Revenue", value: "+25%", sub: "Sustainable income growth" }
+                        ].map((stat, i) => (
+                            <div key={i} className="bg-white dark:bg-gray-700 p-6 rounded-2xl border border-gray-100 dark:border-gray-600 shadow-sm text-center">
+                                <div className="text-3xl font-black text-primary-600 dark:text-primary-400 mb-1">{stat.value}</div>
+                                <div className="text-sm font-bold text-gray-900 dark:text-white">{stat.label}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{stat.sub}</div>
+                            </div>
+                        ))}
+                    </div>
+
                 </div>
             </div>
 

@@ -106,8 +106,8 @@ async function main() {
             operatingDays: [0, 1, 2, 3, 4, 5, 6], // All days
             adminUserId: ootyAdmin.id,
             images: [
+                'https://images.unsplash.com/photo-1578509395623-a5509ae3d288?auto=format&fit=crop&w=800&q=80',
                 'https://images.unsplash.com/photo-1626081120050-71649987f17d?w=1920&h=1080&fit=crop',
-                'https://images.unsplash.com/photo-1590073242678-70ee3fc28e8e?w=1920&h=1080&fit=crop',
             ],
             amenities: ['Boating', 'Parking', 'Restrooms', 'Food Stalls'],
             guidelines: 'Please maintain cleanliness. No plastic allowed. Follow boating safety rules.',

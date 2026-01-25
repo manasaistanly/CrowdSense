@@ -265,7 +265,7 @@ export default function BookingPage() {
                                                     value={visitor.name}
                                                     onChange={(e) => handleVisitorChange(index, 'name', e.target.value)}
                                                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-1 focus:ring-primary-500 outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                                                    placeholder="John Doe"
+                                                    placeholder="Name "
                                                 />
                                             </div>
                                             <div>

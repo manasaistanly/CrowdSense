@@ -149,7 +149,7 @@ export default function DestinationDetailsPage() {
                         muted
                         playsInline
                         className="w-full h-full object-cover scale-[1.01]"
-                        poster={destination.images?.[0] || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fit=crop'}
+                        poster={destination.images?.[0] || 'https://unsplash.com/photos/three-brown-wooden-boat-on-blue-lake-water-taken-at-daytime-T7K4aEPoGGk://images.https://unsplash.com/photos/a-body-of-water-surrounded-by-a-forest-cKuCD4mmGos.com/photo-1469474968028-56623f02e42e?w=1920&h=1080&fhttps://www.istockphoto.com/photo/tea-plantations-around-the-emerald-lake-in-ooty-gm537064629-57727784?utm_source=unsplash&utm_medium=affiliate&utm_campaign=srp_photos_bottom&utm_content=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Footy-lake&utm_term=ooty+lake%3A%3Areset-search-state%3Aexperiment%3Aee1d6936-8307-4e0c-bd64-89a9a96e46bdit=crop'}
                     >
                         {(() => {
                             const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
