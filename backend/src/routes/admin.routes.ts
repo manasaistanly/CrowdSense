@@ -55,7 +55,7 @@ router.get(
     async (req: AuthRequest, res: Response) => {
         try {
             const { status, zoneId } = req.query;
-            const userId = req.user!.userId;
+            const userId = req.user!.userId as string;
             const userRole = req.user!.role;
 
             const filters: any = {};
@@ -96,7 +96,7 @@ router.patch(
     async (req: AuthRequest, res: Response) => {
         try {
             const orderId = req.params.id;
-            const userId = req.user!.userId;
+            const userId = req.user!.userId as string;
 
             const order = await actionOrderService.acknowledgeOrder(orderId, userId);
             res.json({ success: true, data: order });
@@ -122,7 +122,7 @@ router.patch(
     async (req: AuthRequest, res: Response) => {
         try {
             const orderId = req.params.id;
-            const userId = req.user!.userId;
+            const userId = req.user!.userId as string;
             const { proofImageUrl } = req.body;
 
             const order = await actionOrderService.completeOrder(orderId, userId, proofImageUrl);
