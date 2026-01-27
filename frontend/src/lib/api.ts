@@ -15,7 +15,25 @@ export const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('accessToken');
+        let token = localStorage.getItem('accessToken');
+
+        // Fallback: Check auth-storage (Zustand persist) if raw token is missing
+        if (!token) {
+            try {
+                const authStorage = localStorage.getItem('auth-storage');
+                if (authStorage) {
+                    const parsed = JSON.parse(authStorage);
+                    if (parsed.state && parsed.state.accessToken) {
+                        token = parsed.state.accessToken as string;
+                        // Heal the raw key
+                        localStorage.setItem('accessToken', token);
+                    }
+                }
+            } catch (e) {
+                // Ignore parse errors
+            }
+        }
+
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Leaf, Menu, X, LogOut, LayoutDashboard, Map, Home, Users } from 'lucide-react';
+import { Leaf, Menu, X, LogOut, LayoutDashboard, Map, Home, Users, Ticket } from 'lucide-react';
 import { useAuth } from '../stores/authStore';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
@@ -25,8 +25,8 @@ export default function Navbar() {
         <Link
             to={to}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive(to)
-                    ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
+                : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
         >
             {Icon && <Icon className="h-4 w-4" />}
@@ -42,8 +42,8 @@ export default function Navbar() {
                 onClick?.();
             }}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${isActive(to)
-                    ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                ? 'text-primary-600 bg-primary-50 dark:bg-primary-900/20 dark:text-primary-400'
+                : 'text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
         >
             {Icon && <Icon className="h-5 w-5" />}
@@ -72,6 +72,7 @@ export default function Navbar() {
                     <div className="hidden md:flex items-center gap-1">
                         <NavLink to="/" icon={Home}>{t.home || 'Home'}</NavLink>
                         <NavLink to="/destinations" icon={Map}>{t.explore || 'Explore'}</NavLink>
+                        <NavLink to="/itinerary" icon={Ticket}>Itinerary</NavLink>
                         <NavLink to="/community" icon={Users}>{t.community || 'Community'}</NavLink>
 
                         <div className="ml-2 pl-2 border-l border-gray-200 dark:border-gray-700 flex items-center gap-2">

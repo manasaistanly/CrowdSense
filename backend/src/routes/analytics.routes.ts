@@ -1,61 +1,79 @@
-
-import express from 'express';
-import { analyticsService } from '../services/analytics.service';
-import { authenticate } from '../middleware/auth';
-import { requireRole } from '../middleware/rbac';
-import { UserRole } from '@prisma/client';
+import express, { Response } from 'express';
+import { authenticate, authorize, AuthRequest } from '../middleware/auth';
+import { UserRole, ZoneStatus, ActionStatus } from '@prisma/client';
+import { prisma } from '../config/database';
 
 const router = express.Router();
 
 /**
- * Get dashboard stats
- * GET /api/v1/analytics/stats
- * Optional query: destinationId
+ * Get War Room Dashboard Data
+ * Auth: SUPER_ADMIN, ZONE_ADMIN
  */
 router.get(
-    '/stats',
+    '/war-room',
     authenticate,
-    requireRole(UserRole.SUPER_ADMIN, UserRole.DESTINATION_ADMIN),
-    async (req, res, next) => {
+    authorize([UserRole.SUPER_ADMIN, UserRole.ZONE_ADMIN]),
+    async (req: AuthRequest, res: Response) => {
         try {
-            const destinationId = req.query.destinationId as string;
-            // Destination Admins can only see stats for their own destinations? 
-            // For MVP, we assume they pass the ID, and we *should* validate they own it.
-            // But for now, we just let them query.
+            // 1. Zone Health Overview
+            const zones = await prisma.zone.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    status: true,
+                    healthIndex: true,
+                    currentCapacity: true,
+                    maxCapacity: true
+                },
+                orderBy: { healthIndex: 'desc' } // Critical zones first
+            });
 
-            const stats = await analyticsService.getDashboardStats(destinationId);
-            res.json(stats);
-        } catch (error) {
-            next(error);
+            const criticalZones = zones.filter(z => z.status === ZoneStatus.RED);
+
+            // 2. Action Order Overview
+            const pendingOrders = await prisma.actionOrder.count({
+                where: { status: ActionStatus.PENDING }
+            });
+
+            const overdueOrders = await prisma.actionOrder.count({
+                where: { status: ActionStatus.PENDING, priority: 'CRITICAL' } // Approximate "Overdue" query
+            });
+
+            // 3. Officer Status (Active/Idle) - Mocked for now based on recent activity
+            // simplistic: count of users with role STAFF
+            const totalStaff = await prisma.user.count({
+                where: { role: UserRole.STAFF }
+            });
+
+            res.json({
+                success: true,
+                data: {
+                    overview: {
+                        criticalZones: criticalZones.length,
+                        totalVisitors: zones.reduce((sum, z) => sum + z.currentCapacity, 0),
+                        pendingOrders,
+                        overdueOrders,
+                        activeStaff: totalStaff
+                    },
+                    zones: zones,
+                    alerts: criticalZones.map(z => ({
+                        type: 'CRITICAL_ZONE',
+                        message: `Zone ${z.name} is at ${z.healthIndex}% capacity!`
+                    }))
+                }
+            });
+
+        } catch (error: any) {
+            console.error('War Room Error:', error);
+            res.status(500).json({
+                success: false,
+                error: {
+                    code: 'ANALYTICS_FAILED',
+                    message: error.message
+                }
+            });
         }
     }
 );
 
-/**
- * Get visitor trends
- * GET /api/v1/analytics/trends/visitors
- * Optional query: destinationId, period (week, month, year)
- */
-router.get(
-    '/trends/visitors',
-    authenticate,
-    requireRole(UserRole.SUPER_ADMIN, UserRole.DESTINATION_ADMIN),
-    async (req, res, next) => {
-        try {
-            const destinationId = req.query.destinationId as string;
-            const period = (req.query.period as 'week' | 'month' | 'year') || 'month';
-
-            if (destinationId === 'undefined') {
-                // Handle string "undefined" if passed by query string logic
-                // But generally query param would be undefined type
-            }
-
-            const trends = await analyticsService.getVisitorTrends(destinationId, period);
-            res.json(trends);
-        } catch (error) {
-            next(error);
-        }
-    }
-);
-
-export const analyticsRoutes = router;
+export default router;

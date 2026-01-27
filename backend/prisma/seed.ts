@@ -71,6 +71,34 @@ async function main() {
         },
     });
 
+    const zoneAdmin = await prisma.user.upsert({
+        where: { email: 'rdo.ooty@sustainatour.com' },
+        update: {},
+        create: {
+            email: 'rdo.ooty@sustainatour.com',
+            passwordHash: adminPassword,
+            firstName: 'RDO',
+            lastName: 'Ooty',
+            role: UserRole.ZONE_ADMIN,
+            emailVerified: true,
+            phone: '+91 9876543214',
+        },
+    });
+
+    const nodalOfficer = await prisma.user.upsert({
+        where: { email: 'traffic.nodal@sustainatour.com' },
+        update: {},
+        create: {
+            email: 'traffic.nodal@sustainatour.com',
+            passwordHash: adminPassword,
+            firstName: 'Traffic',
+            lastName: 'Chief',
+            role: UserRole.NODAL_OFFICER,
+            emailVerified: true,
+            phone: '+91 9876543215',
+        },
+    });
+
     console.log('✅ Users created');
 
     // Create destinations

@@ -78,6 +78,38 @@ router.post('/', authenticate, validate(createBookingSchema), async (req: AuthRe
 });
 
 /**
+ * POST /api/v1/bookings/batch
+ * Create multiple bookings (Smart Itinerary)
+ */
+router.post('/batch', authenticate, async (req: AuthRequest, res: Response) => {
+    try {
+        const { items } = req.body; // Array of { destinationId, visitDate, visitors }
+
+        if (!Array.isArray(items) || items.length === 0) {
+            res.status(400).json({ success: false, error: { message: "No items in itinerary" } });
+            return;
+        }
+
+        const result = await bookingService.createBatchBooking(req.user!.userId, items);
+
+        res.status(201).json({
+            success: true,
+            data: result,
+            message: 'Itinerary booked successfully'
+        });
+    } catch (error: any) {
+        logger.error('Batch booking error:', error);
+        res.status(400).json({
+            success: false,
+            error: {
+                code: 'BATCH_FAILED',
+                message: error.message || 'One or more items in your itinerary are unavailable.'
+            }
+        });
+    }
+});
+
+/**
  * POST /api/v1/bookings/:id/confirm
  * Confirm booking after payment
  */

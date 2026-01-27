@@ -4,6 +4,7 @@ import { MapPin, TrendingUp, Activity, Target, Leaf, Shield, Info, ChevronDown, 
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import ThemeToggle from '../components/ThemeToggle';
+import { useItinerary } from '../context/ItineraryContext';
 
 interface Zone {
     id: string;
@@ -39,6 +40,7 @@ interface Destination {
 export default function DestinationDetailsPage() {
     const { slug } = useParams();
     const navigate = useNavigate();
+    const { addToItinerary } = useItinerary();
     const [destination, setDestination] = useState<Destination | null>(null);
     const [alternatives, setAlternatives] = useState<Destination[]>([]);
     const [loading, setLoading] = useState(true);
@@ -79,13 +81,27 @@ export default function DestinationDetailsPage() {
     const fetchAlternatives = async () => {
         try {
             const response = await api.get('/destinations');
-            const others = response.data.data.destinations
-                .filter((d: Destination) => d.id !== destination?.id)
-                .slice(0, 4);
-            setAlternatives(others);
+            let others = response.data.data.destinations
+                .filter((d: Destination) => d.id !== destination?.id);
+
+            // Sort by proximity (if coordinates exist)
+            if (destination?.latitude && destination?.longitude) {
+                others = others.sort((a: Destination, b: Destination) => {
+                    const distA = getDistance(destination.latitude!, destination.longitude!, a.latitude || 0, a.longitude || 0);
+                    const distB = getDistance(destination.latitude!, destination.longitude!, b.latitude || 0, b.longitude || 0);
+                    return distA - distB;
+                });
+            }
+
+            setAlternatives(others.slice(0, 4));
         } catch (error) {
             console.error('Failed to load alternatives');
         }
+    };
+
+    // Simple Euclidean distance for sorting (sufficient for local scale)
+    const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+        return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lon2 - lon1, 2));
     };
 
     const openLocation = () => {
@@ -208,13 +224,34 @@ export default function DestinationDetailsPage() {
                         {/* Action Buttons */}
                         <div className="flex flex-wrap items-center gap-4">
                             {(destination.status === 'ACTIVE' && percentage < 100) ? (
-                                <Link
-                                    to={`/book/${destination.id}`}
-                                    className="flex items-center gap-3 bg-white text-black hover:bg-gray-200 px-6 py-3 md:px-8 md:py-4 rounded font-bold text-lg md:text-xl transition-all shadow-xl hover:scale-105 active:scale-95"
-                                >
-                                    <Ticket className="h-5 w-5 md:h-6 md:w-6 fill-black" />
-                                    Book Now
-                                </Link>
+                                <div className="flex flex-col md:flex-row gap-4 mb-2">
+                                    <Link
+                                        to={`/book/${destination.id}`}
+                                        className="flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-200 px-6 py-3 md:px-8 md:py-4 rounded-lg font-bold text-lg md:text-xl transition-all shadow-xl hover:scale-105 active:scale-95"
+                                    >
+                                        <Ticket className="h-5 w-5 md:h-6 md:w-6 fill-black" />
+                                        Book Now
+                                    </Link>
+
+                                    <button
+                                        onClick={() => {
+                                            addToItinerary({
+                                                id: destination.id,
+                                                name: destination.name,
+                                                visitDate: new Date(),
+                                                visitors: 1,
+                                                pricePerPerson: destination.pricingRules[0]?.basePrice || 0,
+                                                zoneId: destination.zones[0]?.id,
+                                                image: destination.images?.[0]
+                                            });
+                                            toast.success('Added to Itinerary');
+                                        }}
+                                        className="flex items-center justify-center gap-3 bg-transparent text-white border-2 border-white hover:bg-white/10 px-6 py-3 md:px-8 md:py-4 rounded-lg font-bold text-lg md:text-xl transition-all shadow-xl hover:scale-105 active:scale-95"
+                                    >
+                                        <Ticket className="h-5 w-5 md:h-6 md:w-6" />
+                                        Add to Itinerary
+                                    </button>
+                                </div>
                             ) : (
                                 <button disabled className="flex items-center gap-3 bg-white/50 text-black cursor-not-allowed px-6 py-3 md:px-8 md:py-4 rounded font-bold text-lg md:text-xl">
                                     <Activity className="h-5 w-5 md:h-6 md:w-6" />
@@ -224,7 +261,7 @@ export default function DestinationDetailsPage() {
 
                             <button
                                 onClick={openLocation}
-                                className="flex items-center gap-3 bg-white/20 hover:bg-white/30 text-white border border-white/30 px-6 py-3 md:px-8 md:py-4 rounded font-bold text-lg md:text-xl backdrop-blur-md transition-all shadow-xl hover:scale-105 active:scale-95"
+                                className="flex items-center gap-3 bg-white/20 hover:bg-white/30 text-white border border-white/30 px-6 py-3 md:px-8 md:py-4 rounded-lg font-bold text-lg md:text-xl backdrop-blur-md transition-all shadow-xl hover:scale-105 active:scale-95"
                             >
                                 <Info className="h-5 w-5 md:h-6 md:w-6" />
                                 More Info
@@ -307,7 +344,16 @@ export default function DestinationDetailsPage() {
                     {/* Similar Destinations */}
                     {alternatives.length > 0 && (
                         <section>
-                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8">You Might Also Like</h3>
+                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-3">
+                                {isHighDemand ? (
+                                    <>
+                                        <MapPin className="h-6 w-6 text-green-500" />
+                                        Nearby Less Crowded Spots
+                                    </>
+                                ) : (
+                                    'You Might Also Like'
+                                )}
+                            </h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {alternatives.map((alt) => (
                                     <Link key={alt.id} to={`/destinations/${alt.id}`} className="group block">

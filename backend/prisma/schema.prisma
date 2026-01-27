@@ -12,6 +12,8 @@ datasource db {
 enum UserRole {
   SUPER_ADMIN
   DESTINATION_ADMIN
+  ZONE_ADMIN
+  NODAL_OFFICER
   STAFF
   ANALYST
   COMMUNITY_REP
@@ -148,6 +150,35 @@ enum OperationalStatus {
   CLOSED
 }
 
+enum ZoneStatus {
+  GREEN
+  YELLOW
+  RED
+}
+
+enum ActionType {
+  CROWD_CONTROL
+  TRAFFIC_DIVERSION
+  RESOURCE_DEPLOYMENT
+  EMERGENCY_ALERT
+  INFRASTRUCTURE_CHECK
+}
+
+enum ActionPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ActionStatus {
+  PENDING
+  ACKNOWLEDGED
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
@@ -173,6 +204,10 @@ model User {
   feedbackResponses     CommunityFeedback[]      @relation("RespondedBy")
   notifications         Notification[]
   dailyStatusUpdates    DailyOperationalStatus[]
+  pollVotes             PollVote[]
+  managedZones          Zone[]                   @relation("ZoneNodalOfficer")
+  receivedOrders        ActionOrder[]            @relation("OrderAssignee")
+  createdOrders         ActionOrder[]            @relation("OrderCreator")
 
   @@index([email])
   @@index([role])
@@ -214,6 +249,7 @@ model Destination {
   communityFeedback    CommunityFeedback[]
   weatherLogs          WeatherLog[]
   dailyOperationalStatus DailyOperationalStatus[]
+  polls                Poll[]
 
   @@index([slug])
   @@index([destinationType])
@@ -229,15 +265,20 @@ model Zone {
   maxCapacity     Int      @map("max_capacity")
   currentCapacity Int      @default(0) @map("current_capacity")
   zoneType        ZoneType @map("zone_type")
-  isRestricted    Boolean  @default(false) @map("is_restricted")
-  requiresGuide   Boolean  @default(false) @map("requires_guide")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  isRestricted    Boolean    @default(false) @map("is_restricted")
+  requiresGuide   Boolean    @default(false) @map("requires_guide")
+  status          ZoneStatus @default(GREEN)
+  healthIndex     Int        @default(100) @map("health_index")
+  nodalOfficerId  String?    @map("nodal_officer_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
 
   // Relations
   destination      Destination        @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  nodalOfficer     User?              @relation("ZoneNodalOfficer", fields: [nodalOfficerId], references: [id])
   bookings         Booking[]
   realtimeCapacity RealtimeCapacity[]
+  actionOrders     ActionOrder[]
 
   @@index([destinationId])
   @@map("zones")
@@ -495,4 +536,78 @@ model DailyOperationalStatus {
   @@unique([destinationId, date])
   @@index([date])
   @@map("daily_operational_status")
+}
+
+model Poll {
+  id            String      @id @default(uuid())
+  destinationId String      @map("destination_id")
+  question      String
+  status        String      @default("ACTIVE") // ACTIVE, CLOSED
+  expiresAt     DateTime?   @map("expires_at")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  createdBy     String?     @map("created_by")
+
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  options       PollOption[]
+  votes         PollVote[]
+
+  @@index([destinationId])
+  @@map("polls")
+}
+
+model PollOption {
+  id        String   @id @default(uuid())
+  pollId    String   @map("poll_id")
+  text      String
+  
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes     PollVote[]
+
+  @@index([pollId])
+  @@map("poll_options")
+}
+
+model PollVote {
+  id           String   @id @default(uuid())
+  pollId       String   @map("poll_id")
+  pollOptionId String   @map("poll_option_id")
+  userId       String   @map("user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  poll         Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  pollOption   PollOption @relation(fields: [pollOptionId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id])
+
+  @@unique([pollId, userId]) // One vote per user per poll
+  @@map("poll_votes")
+}
+
+model ActionOrder {
+  id              String         @id @default(uuid())
+  zoneId          String         @map("zone_id")
+  assignedToId    String         @map("assigned_to_id")
+  createdById     String         @map("created_by_id")
+  type            ActionType
+  priority        ActionPriority
+  status          ActionStatus   @default(PENDING)
+  title           String
+  description     String         @db.Text
+  locationLat     Decimal?       @db.Decimal(10, 8)
+  locationLng     Decimal?       @db.Decimal(11, 8)
+  expiresAt       DateTime?      @map("expires_at")
+  acknowledgedAt  DateTime?      @map("acknowledged_at")
+  completedAt     DateTime?      @map("completed_at")
+  proofImageUrl   String?        @map("proof_image_url")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  zone            Zone           @relation(fields: [zoneId], references: [id])
+  assignedTo      User           @relation("OrderAssignee", fields: [assignedToId], references: [id])
+  createdBy       User           @relation("OrderCreator", fields: [createdById], references: [id])
+
+  @@index([zoneId])
+  @@index([assignedToId])
+  @@index([status])
+  @@map("action_orders")
 }

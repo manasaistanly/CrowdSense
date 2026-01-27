@@ -10,12 +10,13 @@ import authRoutes from './routes/auth.routes';
 import destinationRoutes from './routes/destination.routes';
 import bookingRoutes from './routes/booking.routes';
 import userRoutes from './routes/user.routes';
-import capacityRoutes from './routes/capacity.routes';
-import { analyticsRoutes } from './routes/analytics.routes';
-import pricingRoutes from './routes/pricing.routes';
+
 import { environmentalRoutes } from './routes/environmental.routes';
 import { communityRoutes } from './routes/community.routes';
+import checkpointRoutes from './routes/checkpoint.routes';
 import { reportRoutes } from './routes/report.routes';
+import adminRoutes from './routes/admin.routes';
+import analyticsRoutes from './routes/analytics.routes';
 import { logger } from './utils/logger';
 
 
@@ -60,12 +61,12 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/destinations', destinationRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/capacity', capacityRoutes);
-app.use('/api/v1/analytics', analyticsRoutes);
-app.use('/api/v1/pricing', pricingRoutes);
 app.use('/api/v1/environmental', environmentalRoutes);
 app.use('/api/v1/community', communityRoutes);
+app.use('/api/v1/checkpoint', checkpointRoutes);
 app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
 
 import systemRoutes from './routes/system.routes';
 app.use('/api/v1/system', systemRoutes);

@@ -192,11 +192,43 @@ export class CapacityService {
             }
         }
 
-        // Return the more restrictive of the two
         return {
             isAvailable: true,
             availableSlots: Math.min(availableDestinationSlots, availableZoneSlots)
         };
+    }
+
+    /**
+     * Calculate and Update Zone Health Index & Status based on real-time capacity
+     */
+    async updateZoneHealth(zoneId: string): Promise<void> {
+        const zone = await prisma.zone.findUnique({
+            where: { id: zoneId },
+            select: { id: true, currentCapacity: true, maxCapacity: true }
+        });
+
+        if (!zone || zone.maxCapacity === 0) return;
+
+        // Calculate Percentage
+        const percentage = (zone.currentCapacity / zone.maxCapacity) * 100;
+        const healthIndex = Math.min(100, Math.max(0, Math.round(percentage)));
+
+        // Determine Status
+        let status: 'GREEN' | 'YELLOW' | 'RED' = 'GREEN';
+        if (percentage >= 90) status = 'RED';
+        else if (percentage >= 75) status = 'YELLOW';
+
+        // Update Zone
+        await prisma.zone.update({
+            where: { id: zoneId },
+            data: {
+                healthIndex: healthIndex,
+                status: status
+            }
+        });
+
+        // Optional: Create Alert ActionOrder if RED? 
+        // For MVP, automatic status update is sufficient for the Checkpoint logic to work.
     }
 }
 

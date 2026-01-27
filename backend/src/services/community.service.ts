@@ -95,6 +95,131 @@ export class CommunityService {
             }
         });
     }
+
+    /**
+     * Create a new poll (Admin)
+     */
+    async createPoll(data: {
+        destinationId: string;
+        question: string;
+        options: string[];
+        expiresAt?: Date;
+        createdBy?: string;
+    }) {
+        return await prisma.poll.create({
+            data: {
+                destinationId: data.destinationId,
+                question: data.question,
+                expiresAt: data.expiresAt,
+                createdBy: data.createdBy,
+                options: {
+                    create: data.options.map(text => ({ text }))
+                }
+            },
+            include: {
+                options: true
+            }
+        });
+    }
+
+    /**
+     * Get active polls for a destination with results
+     */
+    async getPolls(destinationId: string, userId?: string) {
+        const polls = await prisma.poll.findMany({
+            where: {
+                destinationId,
+                status: 'ACTIVE',
+                // OR: [{ expiresAt: { gt: new Date() } }, { expiresAt: null }]
+            },
+            include: {
+                options: {
+                    include: {
+                        _count: {
+                            select: { votes: true }
+                        }
+                    }
+                },
+                votes: userId ? {
+                    where: { userId },
+                    select: { pollOptionId: true }
+                } : false
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // Format for frontend
+        return polls.map((poll: any) => {
+            const totalVotes = poll.options.reduce((acc: number, opt: any) => acc + opt._count.votes, 0);
+
+            return {
+                id: poll.id,
+                question: poll.question,
+                expiresAt: poll.expiresAt,
+                totalVotes,
+                userVotedOptionId: poll.votes?.[0]?.pollOptionId || null,
+                options: poll.options.map((opt: any) => ({
+                    id: opt.id,
+                    text: opt.text,
+                    votes: opt._count.votes,
+                    percentage: totalVotes > 0 ? Math.round((opt._count.votes / totalVotes) * 100) : 0
+                }))
+            };
+        });
+    }
+
+    /**
+     * Vote on a poll
+     */
+    async votePoll(pollId: string, optionId: string, userId: string) {
+        // Check if already voted
+        const existingVote = await prisma.pollVote.findUnique({
+            where: {
+                pollId_userId: { pollId, userId }
+            }
+        });
+
+        if (existingVote) {
+            throw new Error('You have already voted on this poll');
+        }
+
+        // Create vote
+        await prisma.pollVote.create({
+            data: {
+                pollId,
+                pollOptionId: optionId,
+                userId
+            }
+        });
+
+        // Return updated poll stats
+        const poll = await prisma.poll.findUnique({
+            where: { id: pollId },
+            include: {
+                options: {
+                    include: {
+                        _count: { select: { votes: true } }
+                    }
+                }
+            }
+        });
+
+        if (!poll) throw new Error('Poll not found');
+
+        const totalVotes = poll.options.reduce((acc: number, opt: any) => acc + opt._count.votes, 0);
+
+        return {
+            id: poll.id,
+            totalVotes,
+            userVotedOptionId: optionId,
+            options: poll.options.map((opt: any) => ({
+                id: opt.id,
+                text: opt.text,
+                votes: opt._count.votes,
+                percentage: totalVotes > 0 ? Math.round((opt._count.votes / totalVotes) * 100) : 0
+            }))
+        };
+    }
 }
 
 export const communityService = new CommunityService();

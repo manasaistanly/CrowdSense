@@ -15,37 +15,44 @@ import CapacityRulesPage from './pages/CapacityRulesPage';
 import PricingRulesPage from './pages/PricingRulesPage';
 import EnvironmentalDashboard from './pages/EnvironmentalDashboard';
 import CommunityPortal from './pages/CommunityPortal';
+import ItineraryPage from './pages/ItineraryPage';
 
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
+
+import { ItineraryProvider } from './context/ItineraryContext';
+
 
 function App() {
     return (
         <ThemeProvider>
             <LanguageProvider>
-                <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                    <Routes>
-                        <Route path="/" element={<LandingPage />} />
-                        <Route path="/about" element={<AboutPage />} />
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/register" element={<RegisterPage />} />
-                        <Route path="/destinations" element={<DestinationsPage />} />
-                        <Route path="/destinations/:slug" element={<DestinationDetailsPage />} />
-                        <Route path="/book/:id" element={<BookingPage />} />
-                        <Route path="/booking/:id" element={<BookingDetailsPage />} />
-                        <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-                        <Route path="/admin/destinations" element={<AdminDestinationsPage />} />
-                        <Route path="/admin/rules" element={<CapacityRulesPage />} />
-                        <Route path="/admin/pricing" element={<PricingRulesPage />} />
-                        <Route path="/admin/environmental" element={<EnvironmentalDashboard />} />
-                        <Route path="/community" element={<CommunityPortal />} />
-                        <Route path="/checkpost" element={<CheckpostPage />} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                </BrowserRouter>
-            </LanguageProvider>
-        </ThemeProvider>
+                <ItineraryProvider>
+                    <BrowserRouter>
+                        <Routes>
+                            <Route path="/" element={<LandingPage />} />
+                            <Route path="/about" element={<AboutPage />} />
+                            <Route path="/login" element={<LoginPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
+                            <Route path="/destinations" element={<DestinationsPage />} />
+                            <Route path="/destinations/:slug" element={<DestinationDetailsPage />} />
+                            <Route path="/book/:id" element={<BookingPage />} />
+                            <Route path="/booking/:id" element={<BookingDetailsPage />} />
+                            <Route path="/itinerary" element={<ItineraryPage />} />
+                            <Route path="/dashboard" element={<DashboardPage />} />
+                            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+                            <Route path="/admin/destinations" element={<AdminDestinationsPage />} />
+                            <Route path="/admin/rules" element={<CapacityRulesPage />} />
+                            <Route path="/admin/pricing" element={<PricingRulesPage />} />
+                            <Route path="/admin/environmental" element={<EnvironmentalDashboard />} />
+                            <Route path="/community" element={<CommunityPortal />} />
+                            <Route path="/checkpost" element={<CheckpostPage />} />
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                        </Routes >
+                    </BrowserRouter >
+                </ItineraryProvider >
+            </LanguageProvider >
+        </ThemeProvider >
     );
 }
 
