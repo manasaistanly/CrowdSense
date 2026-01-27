@@ -35,7 +35,7 @@ router.post(
     authenticate,
     async (req: AuthRequest, res: Response) => {
         try {
-            const userId = (req.user as any).id;
+            const userId = req.user!.userId;
             const feedback = await communityService.submitFeedback({
                 ...req.body,
                 userId
