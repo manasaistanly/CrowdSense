@@ -95,7 +95,7 @@ router.patch(
     authenticate,
     async (req: AuthRequest, res: Response) => {
         try {
-            const orderId = req.params.id;
+            const orderId = req.params.id as string;
             const userId = req.user!.userId as string;
 
             const order = await actionOrderService.acknowledgeOrder(orderId, userId);
@@ -121,7 +121,7 @@ router.patch(
     authenticate,
     async (req: AuthRequest, res: Response) => {
         try {
-            const orderId = req.params.id;
+            const orderId = req.params.id as string;
             const userId = req.user!.userId as string;
             const { proofImageUrl } = req.body;
 
@@ -149,7 +149,7 @@ router.put(
     authorize([UserRole.SUPER_ADMIN, UserRole.ZONE_ADMIN, UserRole.NODAL_OFFICER]),
     async (req: AuthRequest, res: Response) => {
         try {
-            const zoneId = req.params.id;
+            const zoneId = req.params.id as string;
             const { status, healthIndex } = req.body;
 
             const zone = await prisma.zone.update({

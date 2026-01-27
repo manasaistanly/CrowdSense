@@ -82,7 +82,7 @@ export class ActionOrderService {
         let note = '';
         if (order.locationLat && order.locationLng && completedLat && completedLng) {
             const distance = this.calculateDistance(
-                Number(order.locationLat), Number(order.locationLng),
+                (order.locationLat as any).toNumber(), (order.locationLng as any).toNumber(),
                 completedLat, completedLng
             );
 
