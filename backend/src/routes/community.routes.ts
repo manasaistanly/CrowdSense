@@ -97,7 +97,7 @@ router.get(
         try {
             const destinationId = req.params.destinationId as string;
             // Get userId if authenticated (optional)
-            let userId: string | undefined;
+            // let userId: string | undefined;
 
             // Extract token manually since this route might be public-ish but personalized
             // Or we can rely on middleware if we attach it.

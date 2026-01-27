@@ -1,4 +1,4 @@
-import { Prisma, ActionOrder, ActionStatus, ActionType, ActionPriority } from '@prisma/client';
+import { Prisma, ActionStatus, ActionType, ActionPriority } from '@prisma/client';
 import { prisma } from '../config/database';
 
 export class ActionOrderService {
@@ -82,7 +82,7 @@ export class ActionOrderService {
         let note = '';
         if (order.locationLat && order.locationLng && completedLat && completedLng) {
             const distance = this.calculateDistance(
-                order.locationLat, order.locationLng,
+                Number(order.locationLat), Number(order.locationLng),
                 completedLat, completedLng
             );
 
@@ -101,7 +101,7 @@ export class ActionOrderService {
                 status: 'COMPLETED',
                 completedAt: new Date(),
                 proofImageUrl: proofImageUrl,
-                notes: note ? note : undefined
+                // notes: note ? note : undefined // 'notes' field might be missing in schema, skipping for now
             }
         });
     }

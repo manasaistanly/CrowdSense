@@ -13,7 +13,7 @@ router.get(
     '/war-room',
     authenticate,
     authorize([UserRole.SUPER_ADMIN, UserRole.ZONE_ADMIN]),
-    async (req: AuthRequest, res: Response) => {
+    async (_req: AuthRequest, res: Response) => {
         try {
             // 1. Zone Health Overview
             const zones = await prisma.zone.findMany({

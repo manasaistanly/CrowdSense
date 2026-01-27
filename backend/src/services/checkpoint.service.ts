@@ -12,7 +12,7 @@ export class CheckpointService {
      * 5. Increment Zone Capacity
      * 6. Trigger Health Update
      */
-    async scanEntry(qrCode: string, checkpointId: string) {
+    async scanEntry(qrCode: string, _checkpointId: string) {
         // 1. Find Booking
         // In a real app, QR code might be decoded to bookingId or signed token
         // For simulation, assuming QR code string matches booking reference or ID
@@ -86,7 +86,7 @@ export class CheckpointService {
     /**
      * Handle Exit Scan
      */
-    async scanExit(qrCode: string, checkpointId: string) {
+    async scanExit(qrCode: string, _checkpointId: string) {
         const booking = await prisma.booking.findFirst({
             where: {
                 OR: [
