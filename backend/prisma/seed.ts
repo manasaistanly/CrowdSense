@@ -79,7 +79,7 @@ async function main() {
             passwordHash: adminPassword,
             firstName: 'RDO',
             lastName: 'Ooty',
-            role: UserRole.ZONE_ADMIN,
+            role: UserRole.DESTINATION_ADMIN,
             emailVerified: true,
             phone: '+91 9876543214',
         },

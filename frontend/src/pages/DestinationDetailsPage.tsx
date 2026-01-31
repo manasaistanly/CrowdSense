@@ -44,6 +44,8 @@ export default function DestinationDetailsPage() {
     const [destination, setDestination] = useState<Destination | null>(null);
     const [alternatives, setAlternatives] = useState<Destination[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [visitors, setVisitors] = useState(1);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
@@ -221,50 +223,85 @@ export default function DestinationDetailsPage() {
                             {destination.description}
                         </p>
 
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap items-center gap-4">
-                            {(destination.status === 'ACTIVE' && percentage < 100) ? (
-                                <div className="flex flex-col md:flex-row gap-4 mb-2">
-                                    <Link
-                                        to={`/book/${destination.id}`}
-                                        className="flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-200 px-6 py-3 md:px-8 md:py-4 rounded-lg font-bold text-lg md:text-xl transition-all shadow-xl hover:scale-105 active:scale-95"
-                                    >
-                                        <Ticket className="h-5 w-5 md:h-6 md:w-6 fill-black" />
-                                        Book Now
-                                    </Link>
-
-                                    <button
-                                        onClick={() => {
-                                            addToItinerary({
-                                                id: destination.id,
-                                                name: destination.name,
-                                                visitDate: new Date(),
-                                                visitors: 1,
-                                                pricePerPerson: destination.pricingRules[0]?.basePrice || 0,
-                                                zoneId: destination.zones[0]?.id,
-                                                image: destination.images?.[0]
-                                            });
-                                            toast.success('Added to Itinerary');
-                                        }}
-                                        className="flex items-center justify-center gap-3 bg-transparent text-white border-2 border-white hover:bg-white/10 px-6 py-3 md:px-8 md:py-4 rounded-lg font-bold text-lg md:text-xl transition-all shadow-xl hover:scale-105 active:scale-95"
-                                    >
-                                        <Ticket className="h-5 w-5 md:h-6 md:w-6" />
-                                        Add to Itinerary
-                                    </button>
+                        {/* Booking Controls */}
+                        <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl border border-white/20 mb-8 max-w-xl">
+                            <div className="flex flex-col md:flex-row gap-4 mb-6">
+                                <div className="flex-1">
+                                    <label className="block text-white text-sm font-bold mb-2">Visit Date</label>
+                                    <input
+                                        type="date"
+                                        value={selectedDate.toISOString().split('T')[0]}
+                                        min={new Date().toISOString().split('T')[0]}
+                                        onChange={(e) => setSelectedDate(new Date(e.target.value))}
+                                        className="w-full bg-white/20 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500 [color-scheme:dark]"
+                                    />
                                 </div>
-                            ) : (
-                                <button disabled className="flex items-center gap-3 bg-white/50 text-black cursor-not-allowed px-6 py-3 md:px-8 md:py-4 rounded font-bold text-lg md:text-xl">
-                                    <Activity className="h-5 w-5 md:h-6 md:w-6" />
-                                    {isHighDemand ? 'Capacity Full' : 'Unavailable'}
-                                </button>
-                            )}
+                                <div className="w-full md:w-32">
+                                    <label className="block text-white text-sm font-bold mb-2">Visitors</label>
+                                    <div className="flex items-center bg-white/20 border border-white/30 rounded-lg overflow-hidden">
+                                        <button
+                                            onClick={() => setVisitors(Math.max(1, visitors - 1))}
+                                            className="px-3 py-3 hover:bg-white/10 text-white transition"
+                                        >
+                                            -
+                                        </button>
+                                        <span className="flex-1 text-center text-white font-bold">{visitors}</span>
+                                        <button
+                                            onClick={() => setVisitors(Math.min(20, visitors + 1))}
+                                            className="px-3 py-3 hover:bg-white/10 text-white transition"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <div className="flex flex-wrap items-center gap-4">
+                                {(destination.status === 'ACTIVE' && percentage < 100) ? (
+                                    <>
+                                        <Link
+                                            to={`/book/${destination.id}?date=${selectedDate.toISOString()}&visitors=${visitors}`}
+                                            className="flex-1 flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-200 px-6 py-4 rounded-lg font-bold text-lg transition-all shadow-xl hover:scale-105 active:scale-95"
+                                        >
+                                            <Ticket className="h-5 w-5 fill-black" />
+                                            Book Now
+                                        </Link>
+
+                                        <button
+                                            onClick={() => {
+                                                addToItinerary({
+                                                    id: destination.id,
+                                                    name: destination.name,
+                                                    visitDate: selectedDate,
+                                                    visitors: visitors,
+                                                    pricePerPerson: destination.pricingRules[0]?.basePrice || 0,
+                                                    zoneId: destination.zones[0]?.id,
+                                                    image: destination.images?.[0]
+                                                });
+                                                toast.success('Added to Itinerary');
+                                            }}
+                                            className="flex-1 flex items-center justify-center gap-3 bg-transparent text-white border-2 border-white hover:bg-white/10 px-6 py-4 rounded-lg font-bold text-lg transition-all shadow-xl hover:scale-105 active:scale-95"
+                                        >
+                                            <TrendingUp className="h-5 w-5" />
+                                            Add to Plan
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button disabled className="w-full flex items-center justify-center gap-3 bg-white/50 text-black cursor-not-allowed px-8 py-4 rounded-lg font-bold text-lg">
+                                        <Activity className="h-6 w-6" />
+                                        {isHighDemand ? 'Capacity Full' : 'Unavailable'}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
                             <button
                                 onClick={openLocation}
-                                className="flex items-center gap-3 bg-white/20 hover:bg-white/30 text-white border border-white/30 px-6 py-3 md:px-8 md:py-4 rounded-lg font-bold text-lg md:text-xl backdrop-blur-md transition-all shadow-xl hover:scale-105 active:scale-95"
+                                className="flex items-center gap-2 text-white/80 hover:text-white font-medium transition"
                             >
-                                <Info className="h-5 w-5 md:h-6 md:w-6" />
-                                More Info
+                                <MapPin className="h-5 w-5" />
+                                View on Map
                             </button>
                         </div>
                     </div>

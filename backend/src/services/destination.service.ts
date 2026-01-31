@@ -44,6 +44,10 @@ export class DestinationService {
             ];
         }
 
+        // Validate sortBy to prevent errors
+        const validSortFields = ['name', 'createdAt', 'destinationType', 'status'];
+        const safeSortBy = validSortFields.includes(sortBy) ? sortBy : 'name';
+
         // Get total count
         const total = await prisma.destination.count({ where });
 
@@ -52,7 +56,7 @@ export class DestinationService {
             where,
             skip,
             take: limit,
-            orderBy: { [sortBy]: 'asc' },
+            orderBy: { [safeSortBy]: 'asc' },
             select: {
                 id: true,
                 name: true,
