@@ -10,7 +10,7 @@ export default function Footer() {
                         rel="noopener noreferrer"
                         className="text-gray-600 dark:text-gray-400 font-medium hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                     >
-                        Designed by Stanly
+                        Designed & Developed by Stanly
                     </a>
                     <span className="hidden sm:inline text-gray-300 dark:text-gray-700">•</span>
                     <a
