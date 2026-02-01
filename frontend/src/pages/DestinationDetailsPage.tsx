@@ -195,8 +195,8 @@ export default function DestinationDetailsPage() {
                 </div>
 
                 {/* Hero Content Layer */}
-                <div className="absolute bottom-0 left-0 w-full px-6 md:px-12 pb-16 md:pb-24 z-20 flex flex-col justify-end h-full pointer-events-none">
-                    <div className="max-w-5xl animate-fade-in-up pointer-events-auto">
+                <div className="absolute bottom-0 left-0 w-full px-6 md:px-12 lg:px-16 pb-16 md:pb-24 z-20 flex flex-col justify-end h-full pointer-events-none">
+                    <div className="max-w-7xl animate-fade-in-up pointer-events-auto">
 
                         {/* Meta Tags */}
                         <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -224,9 +224,9 @@ export default function DestinationDetailsPage() {
                         </p>
 
                         {/* Booking Controls */}
-                        <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl border border-white/20 mb-8 max-w-xl">
-                            <div className="flex flex-col md:flex-row gap-4 mb-6">
-                                <div className="flex-1">
+                        <div className="bg-white/10 backdrop-blur-md p-4 md:p-6 lg:p-8 rounded-xl border border-white/20 mb-8 w-full max-w-5xl">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                <div className="lg:col-span-2">
                                     <label className="block text-white text-sm font-bold mb-2">Visit Date</label>
                                     <input
                                         type="date"
@@ -236,19 +236,19 @@ export default function DestinationDetailsPage() {
                                         className="w-full bg-white/20 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-red-500 [color-scheme:dark]"
                                     />
                                 </div>
-                                <div className="w-full md:w-32">
+                                <div className="lg:col-span-2">
                                     <label className="block text-white text-sm font-bold mb-2">Visitors</label>
                                     <div className="flex items-center bg-white/20 border border-white/30 rounded-lg overflow-hidden">
                                         <button
                                             onClick={() => setVisitors(Math.max(1, visitors - 1))}
-                                            className="px-3 py-3 hover:bg-white/10 text-white transition"
+                                            className="px-4 py-3 hover:bg-white/10 text-white transition text-lg font-bold"
                                         >
                                             -
                                         </button>
-                                        <span className="flex-1 text-center text-white font-bold">{visitors}</span>
+                                        <span className="flex-1 text-center text-white font-bold text-lg">{visitors}</span>
                                         <button
                                             onClick={() => setVisitors(Math.min(20, visitors + 1))}
-                                            className="px-3 py-3 hover:bg-white/10 text-white transition"
+                                            className="px-4 py-3 hover:bg-white/10 text-white transition text-lg font-bold"
                                         >
                                             +
                                         </button>
@@ -256,12 +256,12 @@ export default function DestinationDetailsPage() {
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {(destination.status === 'ACTIVE' && percentage < 100) ? (
                                     <>
                                         <Link
                                             to={`/book/${destination.id}?date=${selectedDate.toISOString()}&visitors=${visitors}`}
-                                            className="flex-1 flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-200 px-6 py-4 rounded-lg font-bold text-lg transition-all shadow-xl hover:scale-105 active:scale-95"
+                                            className="flex items-center justify-center gap-3 bg-white text-black hover:bg-gray-200 px-6 py-4 rounded-lg font-bold text-lg transition-all shadow-xl hover:scale-105 active:scale-95"
                                         >
                                             <Ticket className="h-5 w-5 fill-black" />
                                             Book Now
@@ -280,14 +280,14 @@ export default function DestinationDetailsPage() {
                                                 });
                                                 toast.success('Added to Itinerary');
                                             }}
-                                            className="flex-1 flex items-center justify-center gap-3 bg-transparent text-white border-2 border-white hover:bg-white/10 px-6 py-4 rounded-lg font-bold text-lg transition-all shadow-xl hover:scale-105 active:scale-95"
+                                            className="flex items-center justify-center gap-3 bg-transparent text-white border-2 border-white hover:bg-white/10 px-6 py-4 rounded-lg font-bold text-lg transition-all shadow-xl hover:scale-105 active:scale-95"
                                         >
                                             <TrendingUp className="h-5 w-5" />
                                             Add to Plan
                                         </button>
                                     </>
                                 ) : (
-                                    <button disabled className="w-full flex items-center justify-center gap-3 bg-white/50 text-black cursor-not-allowed px-8 py-4 rounded-lg font-bold text-lg">
+                                    <button disabled className="md:col-span-2 flex items-center justify-center gap-3 bg-white/50 text-black cursor-not-allowed px-8 py-4 rounded-lg font-bold text-lg">
                                         <Activity className="h-6 w-6" />
                                         {isHighDemand ? 'Capacity Full' : 'Unavailable'}
                                     </button>

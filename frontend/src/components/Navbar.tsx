@@ -21,7 +21,7 @@ export default function Navbar() {
         setIsMenuOpen(false);
     };
 
-    const NavLink = ({ to, children, icon: Icon }: { to: string; children: React.ReactNode; icon?: any }) => (
+    const NavLink = ({ to, children, icon: Icon }: { to: string; children: React.ReactNode; icon?: React.ElementType }) => (
         <Link
             to={to}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive(to)
@@ -34,7 +34,7 @@ export default function Navbar() {
         </Link>
     );
 
-    const MobileNavLink = ({ to, children, onClick, icon: Icon }: { to: string; children: React.ReactNode; onClick?: () => void; icon?: any }) => (
+    const MobileNavLink = ({ to, children, onClick, icon: Icon }: { to: string; children: React.ReactNode; onClick?: () => void; icon?: React.ElementType }) => (
         <Link
             to={to}
             onClick={() => {
