@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, TrendingUp, Activity, Target, Leaf, Shield, Info, ChevronDown, Ticket } from 'lucide-react';
+import { MapPin, TrendingUp, Activity, Target, Leaf, Shield, ChevronDown, Ticket } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import ThemeToggle from '../components/ThemeToggle';
