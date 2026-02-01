@@ -87,14 +87,6 @@ sustainatour/
 5. **COMMUNITY_REP** - Community impact metrics
 6. **TOURIST** - Browse and book destinations
 
-## 🔑 Default Login Credentials
-
-After seeding the database:
-
-- **Super Admin**: `admin@sustainatour.com` / `admin123`
-- **Destination Admin**: `admin.ooty@sustainatour.com` / `admin123`
-- **Staff**: `staff@sustainatour.com` / `staff123`
-- **Tourist**: `tourist@example.com` / `tourist123`
 
 ## 🛠️ Available Scripts
 
@@ -179,7 +171,7 @@ See `deployment-guide.md` for detailed production deployment instructions.
 
 MIT License - see LICENSE file for details
 
-## 👨‍💻 Development Team
+## 👨‍💻 Development 
 
 Built with ❤️ by the STANLY
 
