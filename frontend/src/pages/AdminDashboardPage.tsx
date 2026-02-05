@@ -1,19 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-    Users, LogOut, TrendingUp, Settings, DollarSign,
+    Users, TrendingUp, Settings, DollarSign,
     Activity,
     Leaf,
-    Unlock,
-    Menu,
-    X
+    Unlock
 } from 'lucide-react';
 import api from '../lib/api';
 import { useAuth } from '../stores/authStore';
 import toast from 'react-hot-toast';
 import VisitorTrendsChart from '../components/dashboard/VisitorTrendsChart';
 import { useSocket } from '../hooks/useSocket';
-import ThemeToggle from '../components/ThemeToggle';
+import AdminNavbar from '../components/admin/AdminNavbar';
 import WeatherWidget from '../components/admin/WeatherWidget';
 import CapacityControlPanel from '../components/admin/CapacityControlPanel';
 
@@ -42,13 +40,12 @@ interface DestinationCapacity {
 }
 
 export default function AdminDashboardPage() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
     const [capacities, setCapacities] = useState<DestinationCapacity[]>([]);
     const [trends, setTrends] = useState<any>(null);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     // const [loading, setLoading] = useState(true);
 
     const [operationalStatus, setOperationalStatus] = useState<any>(null);
@@ -180,74 +177,7 @@ export default function AdminDashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
-            {/* Header */}
-            <nav className="bg-gray-900 border-b border-gray-800 text-white sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center gap-2">
-                            <img src="/logo.png" alt="Seal" className="h-8 w-8 text-primary-500" />
-                            <span className="text-xl font-bold tracking-tight">SustainaTour <span className="text-gray-400 font-normal text-sm">| Admin</span></span>
-                        </div>
-
-                        {/* Desktop Menu */}
-                        <div className="hidden md:flex items-center gap-6">
-                            <ThemeToggle />
-                            <span className="text-sm text-gray-400">
-                                {user?.firstName} {user?.lastName} ({user?.role})
-                            </span>
-                            <button
-                                onClick={() => {
-                                    logout();
-                                    navigate('/');
-                                }}
-                                className="flex items-center gap-2 text-gray-300 hover:text-white transition"
-                            >
-                                <LogOut className="h-5 w-5" />
-                                <span className="hidden md:inline">Logout</span>
-                            </button>
-                        </div>
-
-                        {/* Mobile Menu Button */}
-                        <div className="md:hidden flex items-center gap-4">
-                            <ThemeToggle />
-                            <button
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                className="text-gray-300 hover:text-white focus:outline-none"
-                            >
-                                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Mobile Menu Dropdown */}
-                {isMobileMenuOpen && (
-                    <div className="md:hidden bg-gray-800 border-t border-gray-700 px-4 pt-4 pb-6 space-y-4">
-                        <div className="flex items-center gap-3 text-gray-300 mb-4 border-b border-gray-700 pb-4">
-                            <div className="h-10 w-10 bg-primary-900/50 rounded-full flex items-center justify-center text-primary-400 font-bold">
-                                {user?.firstName?.charAt(0)}
-                            </div>
-                            <div>
-                                <div className="font-medium text-white">{user?.firstName} {user?.lastName}</div>
-                                <div className="text-xs text-gray-500">{user?.role}</div>
-                            </div>
-                        </div>
-                        <Link to="/checkpost" className="block text-gray-300 hover:text-white py-2">Checkpost Interface</Link>
-                        <Link to="/admin/destinations" className="block text-gray-300 hover:text-white py-2">Configure Limits</Link>
-                        <Link to="/admin/rules" className="block text-gray-300 hover:text-white py-2">Capacity Rules</Link>
-                        <Link to="/admin/pricing" className="block text-gray-300 hover:text-white py-2">Dynamic Pricing</Link>
-                        <button
-                            onClick={() => {
-                                logout();
-                                navigate('/');
-                            }}
-                            className="w-full flex items-center gap-2 text-red-400 hover:text-red-300 py-2 mt-4 border-t border-gray-700 pt-4"
-                        >
-                            <LogOut className="h-5 w-5" /> Logout
-                        </button>
-                    </div>
-                )}
-            </nav>
+            <AdminNavbar />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8 flex justify-between items-end">

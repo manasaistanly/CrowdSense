@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit2, Trash2, Calendar, Clock, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calendar, Clock, AlertTriangle } from 'lucide-react';
 import api from '../lib/api';
+import AdminNavbar from '../components/admin/AdminNavbar';
 import CapacityRuleForm, { CapacityRule } from '../components/admin/CapacityRuleForm';
 import { useAuth } from '../stores/authStore';
 import toast from 'react-hot-toast';
@@ -117,15 +118,14 @@ export default function CapacityRulesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6 md:p-10">
-            <div className="max-w-6xl mx-auto">
+        <div className="min-h-screen bg-gray-50">
+            <AdminNavbar />
+
+            <div className="max-w-6xl mx-auto p-6 md:p-10">
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate('/admin/dashboard')} className="p-2 hover:bg-gray-200 rounded-full transition">
-                            <ArrowLeft className="h-5 w-5 text-gray-600" />
-                        </button>
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">Capacity Rules</h1>
                             <p className="text-gray-500">Manage dynamic capacity adjustments.</p>

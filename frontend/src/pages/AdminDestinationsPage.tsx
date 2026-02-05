@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Leaf, Plus, Edit, Trash2, MapPin, Users, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Edit, Trash2, MapPin, Users } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import AdminNavbar from '../components/admin/AdminNavbar';
 
 interface Destination {
     id: string;
@@ -60,19 +60,7 @@ export default function AdminDestinationsPage() {
     return (
         <div className="min-h-screen bg-gray-100">
             {/* Header */}
-            <nav className="bg-gray-900 border-b border-gray-800 text-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center gap-2">
-                            <Leaf className="h-8 w-8 text-primary-500" />
-                            <span className="text-xl font-bold tracking-tight">SustainaTour <span className="text-gray-400 font-normal text-sm">| Admin</span></span>
-                        </div>
-                        <Link to="/admin/dashboard" className="text-gray-300 hover:text-white flex items-center gap-2 text-sm font-medium">
-                            <ArrowLeft className="h-4 w-4" /> Back to Dashboard
-                        </Link>
-                    </div>
-                </div>
-            </nav>
+            <AdminNavbar />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex justify-between items-center mb-8">
